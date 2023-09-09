@@ -16,6 +16,9 @@ function filterProducts(searchTerm, excludeOutOfStock) {
     });
 }
 
+function filterByID(searchID){
+    return products.find(product => product.id === searchID);
+}
 
 
 app.get('/', (req,res)=>{
@@ -24,16 +27,34 @@ app.get('/', (req,res)=>{
 
 app.get('/products',(req,res)=>{
     console.log("GET request for /products");
-    let result = products;
-    if(result !== undefined){
-        res.status(200).send(result);
-    }
-    else if(result === undefined){
-        res.status(404).send("404 error - Not found");
+
+    let searchID = req.query.id
+
+    if(searchID !== undefined){
+        let result = filterByID(parseInt(searchID));
+        if(result !== undefined){
+            res.status(200).send(result);
+        }
+        else if(result === undefined){
+            res.status(404).send(`404 error. Product with id ${searchID} not found`);
+        }
+        else{
+            res.status(500).send("500 error. An unknown error occoured");
+        }
     }
     else{
-        res.status(500).send("500 error. An unknown error occoured");
+        let result = products;
+        if(result !== undefined){
+            res.status(200).send(result);
+        }
+        else if(result === undefined){
+            res.status(404).send("404 error - Not found");
+        }
+        else{
+            res.status(500).send("500 error. An unknown error occoured");
+        }
     }
+    
 })
 
 app.get('/products/search', function(req,res, next){
@@ -51,7 +72,6 @@ app.get('/products/search', function(req,res, next){
         
     
 })
-
 
 
 
