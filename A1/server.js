@@ -78,12 +78,12 @@ app.put('/newProduct', function(req,res, next){
     let newProduct=req.body;
     console.log(newProduct);
 
-    if (newProduct.id!=undefined){
-        if(filterByID(newProduct.id)){
-            res.status(404).send("The product ID already exist");
-        }
-    }
-    else (newProduct.hasOwnProperty('name') && newProduct.hasOwnProperty('price') && newProduct.hasOwnProperty('dimensions') && newProduct.hasOwnProperty('stock'));{
+    let highestId = products.reduce((maxId, product) => {
+    return (product.id > maxId) ? product.id : maxId;
+    }, 0);
+
+    if (newProduct.hasOwnProperty('name') && newProduct.hasOwnProperty('price') && newProduct.hasOwnProperty('dimensions') && newProduct.hasOwnProperty('stock')){
+        newProduct.id = highestId+1
         products.push(newProduct);
         res.status(200).send();
     }
