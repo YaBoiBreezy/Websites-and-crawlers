@@ -83,7 +83,7 @@ app.put('/newProduct', function(req,res, next){
             res.status(404).send("The product ID already exist");
         }
     }
-    else if (newProduct.hasOwnProperty('name') && newProduct.hasOwnProperty('price') && newProduct.hasOwnProperty('dimensions') && newProduct.hasOwnProperty('stock')){
+    else(newProduct.hasOwnProperty('name') && newProduct.hasOwnProperty('price') && newProduct.hasOwnProperty('dimensions') && newProduct.hasOwnProperty('stock')){
         products.push(newProduct);
         res.status(200).send();
     }
