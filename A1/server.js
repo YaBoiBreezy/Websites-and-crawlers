@@ -170,7 +170,7 @@ app.put('/addReview', function(req, res, next){
     let product=filterByID(data.id);
 
     if( product){
-        product.review=data.rate;
+        product.review=data.review;
         res.status(200).send()
     }
     else{
@@ -180,12 +180,19 @@ app.put('/addReview', function(req, res, next){
 
 // a get for reviews for specific product ID
 app.get('/getReview', function(req, res, next){
-    let productID=req.query.id;
+    let productID=parseInt(req.query.id);
+    console.log(productID);
     let product=filterByID(productID);
 
     if( product){
+        console.log(product.review);
+        if (product.review){
+            res.status(200).send(""+product.review);
+        }
+        else{
+            res.status(200).send("NO REVIEW");
+        }
         
-        res.status(200).send(product.review);
     }
     else{
         res.status(404).send("404 error - This product  can't be found");
