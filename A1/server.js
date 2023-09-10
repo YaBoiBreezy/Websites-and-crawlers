@@ -73,6 +73,22 @@ app.get('/products/search', function(req,res, next){
     }
 })
 
+app.put('/newProduct', function(req,res, next){
+    console.log("new product")
+    let newProduct=req.body;
+    console.log(newProduct);
+
+    if (newProduct.id!=undefined){
+        if(filterByID(newProduct.id)){
+            res.status(404).send("The product ID already exist");
+        }
+    }
+    else(newProduct.hasOwnProperty('name') && newProduct.hasOwnProperty('price') && newProduct.hasOwnProperty('dimensions') && newProduct.hasOwnProperty('stock')){
+        products.push(newProduct);
+        res.status(200).send();
+    }
+})
+
 
 app.listen(port, () => {
     console.log(`Server listening on PORT: ${port}`)
