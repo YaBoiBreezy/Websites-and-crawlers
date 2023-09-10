@@ -2,6 +2,8 @@ const express = require('express')
 const app = express()
 const port = 3000
 const products = require("./products.json") //import our json data
+const path = require('path');
+
 
 app.use(express.json()) // body-parser middleware
 
@@ -23,6 +25,26 @@ function filterByID(searchID){
 
 app.get('/', (req,res)=>{
     res.send("Hello World!");
+})
+
+// GET route for search.html
+app.get('/search.html',(req,res)=>{
+    res.format({
+        'text/html' : function(){
+            let result = path.join(__dirname, '/search.html');
+            console.log(result)
+            if (result !== undefined){
+                res.sendFile(result);
+            }
+            else if (result === undefined){
+                res.status(404).send("404 error - file not found :(");
+            }
+            else{
+                res.status(500).send("Unkown error occoured. Please try agian.");
+            }
+
+        }
+    })
 })
 
 //GET method for getting all products in the store or querying all products by ID
@@ -57,6 +79,7 @@ app.get('/products',(req,res)=>{
     }
     
 })
+
 
 // TODO changes need to be made to handle the data of search term and a boolean stock value.
 app.get('/products/search', function(req,res, next){
