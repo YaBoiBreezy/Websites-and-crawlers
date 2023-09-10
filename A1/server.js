@@ -73,7 +73,7 @@ app.get('/products/search', function(req,res, next){
     
 })
 
-app.post('/newProduct', function(req,res, next){
+app.put('/newProduct', function(req,res, next){
     console.log("new product")
     let newProduct=req.body;
     console.log(newProduct);
