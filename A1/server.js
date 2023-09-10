@@ -25,6 +25,7 @@ app.get('/', (req,res)=>{
     res.send("Hello World!");
 })
 
+//GET method for getting all products in the store or querying all products by ID
 app.get('/products',(req,res)=>{
     console.log("GET request for /products");
 
@@ -57,6 +58,7 @@ app.get('/products',(req,res)=>{
     
 })
 
+// TODO changes need to be made to handle the data of search term and a boolean stock value.
 app.get('/products/search', function(req,res, next){
     let searchTerm = req.query.name
     let result = filterProducts(searchTerm, excludeOutOfStock);
@@ -69,12 +71,16 @@ app.get('/products/search', function(req,res, next){
     else{
         res.status(500).send("500 error. An unknown error occoured");
     }
-        
-    
 })
-
 
 
 app.listen(port, () => {
     console.log(`Server listening on PORT: ${port}`)
 })
+
+// a get for the search page 
+// a post to get specific products based on search term and out of stock which is string and Boolean respectively and those will be in the data{}
+// a put to create a new product, no response
+// a get to receive a specific product based on id, use the url for that /products?search=searchTerm
+// a put to add a review for a product, so send data{} with id and rating
+// a get for reviews for specific product ID
