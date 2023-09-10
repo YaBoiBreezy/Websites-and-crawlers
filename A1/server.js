@@ -47,6 +47,46 @@ app.get('/search.html',(req,res)=>{
     })
 })
 
+// GET route for reviews.html
+app.get('/reviews.html',(req,res)=>{
+    res.format({
+        'text/html' : function(){
+            let result = path.join(__dirname, '/reviews.html');
+            console.log(result)
+            if (result !== undefined){
+                res.sendFile(result);
+            }
+            else if (result === undefined){
+                res.status(404).send("404 error - file not found :(");
+            }
+            else{
+                res.status(500).send("Unkown error occoured. Please try agian.");
+            }
+
+        }
+    })
+})
+
+// GET route for addProduct.html
+app.get('/products/addProduct.html',(req,res)=>{
+    res.format({
+        'text/html' : function(){
+            let result = path.join(__dirname, '/addProduct.html');
+            console.log(result)
+            if (result !== undefined){
+                res.sendFile(result);
+            }
+            else if (result === undefined){
+                res.status(404).send("404 error - file not found :(");
+            }
+            else{
+                res.status(500).send("Unkown error occoured. Please try agian.");
+            }
+
+        }
+    })
+})
+
 //GET method for getting all products in the store or querying all products by ID
 app.get('/products',(req,res)=>{
     console.log("GET request for /products");
