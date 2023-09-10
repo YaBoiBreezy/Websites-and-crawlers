@@ -7,7 +7,17 @@ const path = require('path');
 
 app.use(express.json()) // body-parser middleware
 
-
+function parseBool(str){
+    if(str.toLowerCase() === "true"){
+        return true;
+    }
+    else if(str.toLowerCase() === "false"){
+        return false;
+    }
+    else{
+        return null;
+    }
+}
 function filterProducts(searchTerm, excludeOutOfStock) {
     return products.filter(product => {
         const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -121,18 +131,26 @@ app.get('/products',(req,res)=>{
 })
 
 
-// TODO changes need to be made to handle the data of search term and a boolean stock value.
-app.get('/products/search', function(req,res, next){
-    let searchTerm = req.query.name
-    let result = filterProducts(searchTerm, excludeOutOfStock);
-    if(result !== undefined){
-        res.status(200).send(result);
-    }
-    else if(result === undefined){
-        res.status(404).send("404 error - Not found");
+// Search product with stock as a boolean
+app.get('/products/search/:name/:stock', function(req,res, next){
+    let searchTerm = req.params.name
+    let excludeOutOfStock = parseBool(req.params.stock)
+
+    if(excludeOutOfStock !== null){
+        console.log(searchTerm,excludeOutOfStock);
+        let result = filterProducts(searchTerm, excludeOutOfStock);
+        if(result !== undefined){
+            res.status(200).send(result);
+        }
+        else if(result === undefined){
+            res.status(404).send("404 error - Not found");
+        }
+        else{
+            res.status(500).send("500 error. An unknown error occoured");
+        }
     }
     else{
-        res.status(500).send("500 error. An unknown error occoured");
+        res.status(400).send("400 error. Please check parameters")
     }
 })
 
