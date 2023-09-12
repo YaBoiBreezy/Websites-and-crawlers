@@ -13,7 +13,7 @@ body {
     background-color: white;
 }
 
-input {
+input {type="text"}{
     width: 70%; //this makes good spacing
     padding: 20px;
     margin: 10px 0;

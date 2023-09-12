@@ -21,7 +21,7 @@ function addProduct(){
    fetch('http://localhost:3000/newProduct', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(productData),
+        body: JSON.stringify(product),
     })
     .then(response => {
         if (!response.ok) {
@@ -61,7 +61,7 @@ function displayResults(results) {
         const productName = document.createElement('h2');
         const productNameA = document.createElement('a');
         productNameA.textContent = `${product.name}`;
-        productNameA.href = `http://localhost:3000/products?id=${product.id}`;
+        productNameA.href = `http://localhost:3000/products/product?id=${product.id}`;
         productName.appendChild(productNameA);
 
         const productStock = document.createElement('p');
@@ -95,7 +95,7 @@ function addReview(productId) {
         fetch(`http://localhost:3000/products/addReview?id=${productId}`, {
             method: 'PUT',
             headers: {'Content-Type': 'application/json',},
-            body: JSON.stringify({ review: reviewData }),
+            body: JSON.stringify({ review: reviewValue }),
         })
         .then(response => {
             if (!response.ok) {

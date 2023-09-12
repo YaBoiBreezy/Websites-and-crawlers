@@ -116,51 +116,6 @@ app.get('/products/addProduct.html',(req,res)=>{
 })
 
 
-//get route for specific product page
-app.get('/products/:id', (req, res) => {
-    const productId = parseInt(req.params.id);
-
-    const product = products.find(p => p.id === productId);
-
-     if (product) {
-        // Construct HTML as a string
-        const html = `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>${product.name}</title>
-            </head>
-            <body>
-                <div>
-                    <a href="http://localhost:3000/search.html">Return to Search</a>
-                </div>
-
-                <h1>${product.name}</h1>
-                <p>Price: ${product.price}</p>
-                <p>Dimensions: ${product.dimensions.x} x ${product.dimensions.y} x ${product.dimensions.z}</p>
-                <p>Stock: ${product.stock}</p>
-                <p>Reviews Mean: ${calculateMean(product.reviews)}</p>
-
-                <!-- Link to View Reviews -->
-                <a href="http://localhost:3000/reviews?id=${product.id}">View Reviews</a>
-
-                <!-- Form for Adding a Review -->
-                <form>
-                    <label for="reviewInput">Add Review (0-10):</label>
-                    <input type="number" id="reviewInput" name="review" min="0" max="10">
-                    <button type="button" onclick="addReview(${product.id})">Submit Review</button>
-                </form>
-
-            </body>
-            </html>
-        `;
-
-        res.send(html);
-    } else {
-        res.status(404).send('Product not found');
-    }
-})
 
 
 // Search products by name and inStockOnly boolean
@@ -187,6 +142,54 @@ app.get('/products/search', (req, res) => {
 
 });
 
+//get route for specific product page
+app.get('/products/product', (req, res) => {
+    console.log("prod")
+    const productId = parseInt(req.query.id);
+
+    const product = products.find(p => p.id === productId);
+
+     if (product) {
+        // Construct HTML as a string
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>${product.name}</title>
+                <!-- <link rel="stylesheet" href="/styles.css"> this stylesheet doesnt work here --> 
+                <script src="/client.js" defer></script>
+            </head>
+            <body>
+                <div>
+                    <a href="http://localhost:3000/search.html">Return to Search</a>
+                </div>
+
+                <h1>${product.name}</h1>
+                <p>Price: ${product.price}</p>
+                <p>Dimensions: ${product.dimensions.x} x ${product.dimensions.y} x ${product.dimensions.z}</p>
+                <p>Stock: ${product.stock}</p>
+                <p>Reviews Mean: ${calculateMean(product.reviews)}</p>
+
+                <!-- Link to View Reviews -->
+                <a href="http://localhost:3000/products/reviews?id=${product.id}">View Reviews</a>
+
+                <!-- Form for Adding a Review -->
+                <form>
+                    <label for="reviewInput">Add Review (0-10):</label>
+                    <input type="number" id="reviewInput" name="review" min="0" max="10">
+                    <button type="button" onclick="addReview(${product.id})">Submit Review</button>
+                </form>
+
+            </body>
+            </html>
+        `;
+
+        res.send(html);
+    } else {
+        res.status(404).send('Product not found');
+    }
+})
 
 app.listen(port, () => {
     console.log(`Server listening on PORT: ${port}`)
@@ -218,9 +221,9 @@ app.put('/newProduct', function(req,res, next){
 
 // a put to add a review for a product, so send data{} with id and rating
 app.put('/products/addReview', function(req, res, next){
-    const productID = req.query.id;
-    let review = req.body.review;
-    let product=filterByID(productID);
+    const productID = parseInt(req.query.id);
+    let review = parseInt(req.body.review);
+    let product = filterByID(productID);
 
     if( product){
         product.reviews.push(review);
@@ -232,9 +235,10 @@ app.put('/products/addReview', function(req, res, next){
 })
 
 // a get for reviews for specific product ID
-app.get('/products/getReviews', function(req, res, next){
-    const productID = req.query.id;
+app.get('/products/reviews', function(req, res, next){
+    const productID = parseInt(req.query.id);
     let product=filterByID(productID);
+    let reviewsHTML;
     console.log(product);
 
 
@@ -243,11 +247,10 @@ app.get('/products/getReviews', function(req, res, next){
         if (acceptHeader && acceptHeader.includes('application/json')) {
             res.json(product.reviews);
         } else {
-            if( product){
             console.log(product.reviews);
             if (product.reviews){
                 if (product.reviews.length > 0) {
-                    reviewsHTML = makeReviewsList(product.reviews);
+                    reviewsHTML = generateReviewsList(product.reviews);
                 } else {
                     reviewsHTML = '<li>NO REVIEWS FOUND</li>';
                 } //list all reviews in new page, with way to return to search
@@ -263,6 +266,9 @@ app.get('/products/getReviews', function(req, res, next){
                 <div>
                     <a href="http://localhost:3000/search.html">Return to Search</a>
                 </div>
+                <div>
+                    <a href="http://localhost:3000/products/product?id=${productID}">Return to Product</a>
+                </div>
                 <h1>${product.name}</h1>
                 <h2>Reviews:</h2>
                 <ul>
@@ -271,11 +277,9 @@ app.get('/products/getReviews', function(req, res, next){
                 </body>
                 </html>
                 `;
-            }
-            res.status(200).send(html);
-            }
-            else{
-                res.status(200).send("NO REVIEWS FOUND");
+                res.status(200).send(html);
+            } else {
+                res.status(404).send("404 error - This product  has no reviews attribute");
             }
         }
         
