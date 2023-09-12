@@ -1,11 +1,17 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
+const cors = require('cors');
+app.use(cors());
 const port = 3000
 const products = require("./products.json") //import our json data
+products.forEach(product => { product.reviews = []; }); //add review list to each one
 const path = require('path');
 
 
 app.use(express.json()) // body-parser middleware
+
+
+
 
 function parseBool(str){
     if(str.toLowerCase() === "true"){
@@ -18,10 +24,18 @@ function parseBool(str){
         return null;
     }
 }
+
+function generateReviewsList(reviews) {
+    let reviewsHTML = '';
+    reviews.forEach(review => {
+        reviewsHTML += `<li>Review: ${review}</li>`;
+    });
+    return reviewsHTML;
+}
+
 function filterProducts(searchTerm, excludeOutOfStock) {
     return products.filter(product => {
-        const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                 product.id === parseInt(searchTerm);
+        const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         const isInStock = !excludeOutOfStock || product.stock > 0;
         
         return matchesSearchTerm && isInStock;
@@ -32,10 +46,32 @@ function filterByID(searchID){
     return products.find(product => product.id === searchID);
 }
 
+function calculateMean(reviews) {
+    if (reviews.length === 0) return 0;
 
-app.get('/', (req,res)=>{
-    res.send("Hello World!");
-})
+    const sum = reviews.reduce((acc, review) => acc + review, 0);
+    return sum / reviews.length;
+}
+
+// GET route for styles.css
+app.get('/styles.css', (req, res) => {
+    let result = path.join(__dirname, 'styles.css');
+    res.sendFile(result, (err) => {
+        if (err) {
+            res.status(404).send("404 error - file not found :(");
+        }
+    });
+});
+
+app.get('/client.js', (req, res) => {
+    let result = path.join(__dirname, 'client.js');
+    res.sendFile(result, (err) => {
+        if (err) {
+            res.status(404).send("404 error - file not found :(");
+        }
+    });
+});
+
 
 // GET route for search.html
 app.get('/search.html',(req,res)=>{
@@ -57,25 +93,7 @@ app.get('/search.html',(req,res)=>{
     })
 })
 
-// GET route for reviews.html
-app.get('/reviews.html',(req,res)=>{
-    res.format({
-        'text/html' : function(){
-            let result = path.join(__dirname, '/reviews.html');
-            console.log(result)
-            if (result !== undefined){
-                res.sendFile(result);
-            }
-            else if (result === undefined){
-                res.status(404).send("404 error - file not found :(");
-            }
-            else{
-                res.status(500).send("Unkown error occoured. Please try agian.");
-            }
 
-        }
-    })
-})
 
 // GET route for addProduct.html
 app.get('/products/addProduct.html',(req,res)=>{
@@ -97,62 +115,77 @@ app.get('/products/addProduct.html',(req,res)=>{
     })
 })
 
-//GET method for getting all products in the store or querying all products by ID
-app.get('/products',(req,res)=>{
-    console.log("GET request for /products");
 
-    let searchID = req.query.id
+//get route for specific product page
+app.get('/products/:id', (req, res) => {
+    const productId = parseInt(req.params.id);
 
-    if(searchID !== undefined){
-        let result = filterByID(parseInt(searchID));
-        if(result !== undefined){
-            res.status(200).send(result);
-        }
-        else if(result === undefined){
-            res.status(404).send(`404 error. Product with id ${searchID} not found`);
-        }
-        else{
-            res.status(500).send("500 error. An unknown error occoured");
-        }
+    const product = products.find(p => p.id === productId);
+
+     if (product) {
+        // Construct HTML as a string
+        const html = `
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>${product.name}</title>
+            </head>
+            <body>
+                <div>
+                    <a href="http://localhost:3000/search.html">Return to Search</a>
+                </div>
+
+                <h1>${product.name}</h1>
+                <p>Price: ${product.price}</p>
+                <p>Dimensions: ${product.dimensions.x} x ${product.dimensions.y} x ${product.dimensions.z}</p>
+                <p>Stock: ${product.stock}</p>
+                <p>Reviews Mean: ${calculateMean(product.reviews)}</p>
+
+                <!-- Link to View Reviews -->
+                <a href="http://localhost:3000/reviews?id=${product.id}">View Reviews</a>
+
+                <!-- Form for Adding a Review -->
+                <form>
+                    <label for="reviewInput">Add Review (0-10):</label>
+                    <input type="number" id="reviewInput" name="review" min="0" max="10">
+                    <button type="button" onclick="addReview(${product.id})">Submit Review</button>
+                </form>
+
+            </body>
+            </html>
+        `;
+
+        res.send(html);
+    } else {
+        res.status(404).send('Product not found');
     }
-    else{
-        let result = products;
-        if(result !== undefined){
-            res.status(200).send(result);
-        }
-        else if(result === undefined){
-            res.status(404).send("404 error - Not found");
-        }
-        else{
-            res.status(500).send("500 error. An unknown error occoured");
-        }
+})
+
+
+// Search products by name and inStockOnly boolean
+app.get('/products/search', (req, res) => {
+    console.log("HI");
+    const searchTerm = req.query.name;
+    const inStockOnly = req.query.inStock === 'true'; // url is string, had to convert it to a boolean
+    if (typeof inStockOnly !== 'boolean') {
+        return res.status(400).json({ error: 'inStockOnly should be bool' });
     }
+    console.log(searchTerm,inStockOnly);
+
+    const results = filterProducts(searchTerm, inStockOnly); //find all matching products 
     
-})
-
-
-// Search product with stock as a boolean
-app.get('/products/search/:name/:stock', function(req,res, next){
-    let searchTerm = req.params.name
-    let excludeOutOfStock = parseBool(req.params.stock)
-
-    if(excludeOutOfStock !== null){
-        console.log(searchTerm,excludeOutOfStock);
-        let result = filterProducts(searchTerm, excludeOutOfStock);
-        if(result !== undefined){
-            res.status(200).send(result);
-        }
-        else if(result === undefined){
-            res.status(404).send("404 error - Not found");
-        }
-        else{
-            res.status(500).send("500 error. An unknown error occoured");
-        }
+    if(results !== undefined){
+        res.status(200).send(results);
+    }
+    else if(result === undefined){
+        res.status(404).send("404 error - Not found");
     }
     else{
-        res.status(400).send("400 error. Please check parameters")
+        res.status(500).send("500 error. An unknown error occoured");
     }
-})
+
+});
 
 
 app.listen(port, () => {
@@ -166,6 +199,7 @@ app.listen(port, () => {
 app.put('/newProduct', function(req,res, next){
     console.log("new product")
     let newProduct=req.body;
+    newProduct.reviews=[]
     console.log(newProduct);
 
     let highestId = products.reduce((maxId, product) => {
@@ -183,12 +217,13 @@ app.put('/newProduct', function(req,res, next){
 // a get to receive a specific product based on id, use the url for that /products?search=searchTerm
 
 // a put to add a review for a product, so send data{} with id and rating
-app.put('/addReview', function(req, res, next){
-    let data=req.body;
-    let product=filterByID(data.id);
+app.put('/products/addReview', function(req, res, next){
+    const productID = req.query.id;
+    let review = req.body.review;
+    let product=filterByID(productID);
 
     if( product){
-        product.review=data.review;
+        product.reviews.push(review);
         res.status(200).send()
     }
     else{
@@ -197,18 +232,51 @@ app.put('/addReview', function(req, res, next){
 })
 
 // a get for reviews for specific product ID
-app.get('/getReview', function(req, res, next){
-    let productID=parseInt(req.query.id);
-    console.log(productID);
+app.get('/products/getReviews', function(req, res, next){
+    const productID = req.query.id;
     let product=filterByID(productID);
+    console.log(product);
 
-    if( product){
-        console.log(product.review);
-        if (product.review){
-            res.status(200).send(""+product.review);
-        }
-        else{
-            res.status(200).send("NO REVIEW");
+
+     if (product) {
+        const acceptHeader = req.get('Accept');
+        if (acceptHeader && acceptHeader.includes('application/json')) {
+            res.json(product.reviews);
+        } else {
+            if( product){
+            console.log(product.reviews);
+            if (product.reviews){
+                if (product.reviews.length > 0) {
+                    reviewsHTML = makeReviewsList(product.reviews);
+                } else {
+                    reviewsHTML = '<li>NO REVIEWS FOUND</li>';
+                } //list all reviews in new page, with way to return to search
+                const html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${product.name}</title>
+                </head>
+                <body>
+                <div>
+                    <a href="http://localhost:3000/search.html">Return to Search</a>
+                </div>
+                <h1>${product.name}</h1>
+                <h2>Reviews:</h2>
+                <ul>
+                    ${reviewsHTML}
+                </ul>
+                </body>
+                </html>
+                `;
+            }
+            res.status(200).send(html);
+            }
+            else{
+                res.status(200).send("NO REVIEWS FOUND");
+            }
         }
         
     }

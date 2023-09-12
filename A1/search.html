@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Breezy's Bonanza!</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <div class="container">
@@ -12,9 +12,14 @@
         <label>
             <input type="checkbox" id="inStock"> In Stock Only
         </label>
-        <button id="addProduct">Add a Product</button>
+        </br>
+        <button id="search" onclick="searchProduct()">Search</button>
+        </br>
+        <a href="http://localhost:3000/products/addProduct.html">
+            <button>Add a Product</button>
+        </a>
         <div id="results"></div>
     </div>
-    <script src="client.js"></script>
+    <script src="/client.js"></script>
 </body>
 </html>

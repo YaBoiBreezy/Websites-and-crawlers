@@ -3,10 +3,15 @@
 <head>
    <meta charset="UTF-8">
    <title>Add Product</title>
-   <link rel="stylesheet" href="styles.css">
+   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
    <div class="container" style="text-align: left;">
+
+      <div>
+          <a href="http://localhost:3000/search.html">Return to Search</a>
+      </div>
+
       <h1>Add Product</h1>
 
       <form id="addProductForm">
@@ -28,10 +33,10 @@
          <label for="stock">Stock:</label>
          <input type="number" id="stock" name="stock" min="0" required><br>
 
-         <button type="submit">Submit</button>
+         <button type="submit" onclick="addProduct()">Submit</button>
       </form>
    </div>
 
-   <script src="script.js"></script>
+   <script src="/client.js"></script>
 </body>
 </html>
