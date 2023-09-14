@@ -47,29 +47,44 @@ function filterByID(searchID){
 }
 
 function calculateMean(reviews) {
-    if (reviews.length === 0) return 0;
-
+    if (reviews.length === 0){
+        return 0;
+    }
     const sum = reviews.reduce((acc, review) => acc + review, 0);
     return sum / reviews.length;
 }
 
 // GET route for styles.css
 app.get('/styles.css', (req, res) => {
-    let result = path.join(__dirname, 'styles.css');
-    res.sendFile(result, (err) => {
-        if (err) {
+    res.format({
+        let result = path.join(__dirname, 'styles.css');
+        console.log(result)
+        if (result !== undefined){
+            res.sendFile(result);
+        }
+        else if (result === undefined){
             res.status(404).send("404 error - file not found :(");
         }
-    });
+        else{
+            res.status(500).send("Unkown error occoured. Please try agian.");
+        }
+    })
 });
 
 app.get('/client.js', (req, res) => {
-    let result = path.join(__dirname, 'client.js');
-    res.sendFile(result, (err) => {
-        if (err) {
+    res.format({
+        let result = path.join(__dirname, 'client.js');
+        console.log(result)
+        if (result !== undefined){
+            res.sendFile(result);
+        }
+        else if (result === undefined){
             res.status(404).send("404 error - file not found :(");
         }
-    });
+        else{
+            res.status(500).send("Unkown error occoured. Please try agian.");
+        }
+    })
 });
 
 
@@ -120,7 +135,6 @@ app.get('/products/addProduct.html',(req,res)=>{
 
 // Search products by name and inStockOnly boolean
 app.get('/products/search', (req, res) => {
-    console.log("HI");
     const searchTerm = req.query.name;
     const inStockOnly = req.query.inStock === 'true'; // url is string, had to convert it to a boolean
     if (typeof inStockOnly !== 'boolean') {
@@ -213,7 +227,10 @@ app.put('/newProduct', function(req,res, next){
         newProduct.id = highestId+1
         products.push(newProduct);
         res.status(200).send();
+    } else {
+        res.status(404).send("error: invalid product");
     }
+    
     
 })
 
@@ -223,14 +240,17 @@ app.put('/newProduct', function(req,res, next){
 app.put('/products/addReview', function(req, res, next){
     const productID = parseInt(req.query.id);
     let review = parseInt(req.body.review);
-    let product = filterByID(productID);
+    if (isNaN(review) || review < 0 || review > 10) {
+        return res.status(400).send('Invalid review. Please provide a number between 0 and 10.');
+    }
 
-    if( product){
+    let product = filterByID(productID);
+    if (product){
         product.reviews.push(review);
         res.status(200).send()
     }
     else{
-        res.status(404).send("404 error - This product  can't be found");
+        res.status(404).send("404 error - This product can't be found or the review is invalid");
     }
 })
 
