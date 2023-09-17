@@ -8,5 +8,6 @@
 
 ## Instructions
 
-1. Install Node.js (LTS)
-2. Start the server from your terminal by running `npm start`.
+1. Install Node.js (LTS).
+2. Install the dependencies from your terminal by running `npm install`.
+3. Start the server from your terminal by running `npm start`.
