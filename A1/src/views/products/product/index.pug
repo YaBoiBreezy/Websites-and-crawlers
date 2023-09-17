@@ -10,6 +10,8 @@ html(lang="en")
   body
     h1= product.name
     p 
+      a(href=`/products`) Search
+    p 
       a(href=`/products/${product.id}/reviews`) #{product.reviews.length} Reviews
     p ID: #{product.id}
     p Price: #{product.price}

@@ -9,6 +9,8 @@ html(lang="en")
 
   body
     h1 Reviews of #{product.name}
+    p 
+      a(href=`/products/${product.id}`) #{product.name}
  
     aside
       h2 Add
