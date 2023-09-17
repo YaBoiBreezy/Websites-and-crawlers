@@ -1,0 +1,17 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width")
+
+    title= product.name
+
+  body
+    h1= product.name
+    p 
+      a(href=`/products/${product.id}/reviews`) #{product.reviews.length} Reviews
+    p ID: #{product.id}
+    p Price: #{product.price}
+    p Dimensions: #{product.dimensions.x} × #{product.dimensions.x} × #{product.dimensions.x}
+    p Stock: #{product.stock}
