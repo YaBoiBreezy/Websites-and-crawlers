@@ -30,10 +30,10 @@ html(lang="en")
         each order in orders
           article
             h2
-              a(href=`/orders/${order.id}`)= order.name
-            each item in order.items
+              a(href=`/orders/${order.id}`)= order.id
+            each item in order.orderItems
             p
-              span Product ID: #{item.product.id}
+              span Product ID: #{item.productId}
               span Quantity: #{item.quantity}
   else 
     p No orders found.
