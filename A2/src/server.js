@@ -129,7 +129,7 @@ app.get(
       });
 
       if (!product) {
-        return next(new ResourceNotFoundError("Product not found."));
+        return next(new errors.ResourceNotFoundError("Product not found."));
       }
 
       return res.status(200).format({
@@ -162,7 +162,7 @@ app.get(
       });
 
       if (!product) {
-        return next(new ResourceNotFoundError("Product not found."));
+        return next(new errors.ResourceNotFoundError("Product not found."));
       }
 
       return res.status(200).format({
@@ -195,7 +195,7 @@ app.post(
       });
 
       if (!product) {
-        return next(ResourceNotFoundError("Product not found."));
+        return next(new errors.ResourceNotFoundError("Product not found."));
       }
 
       let review = await db.review.create({

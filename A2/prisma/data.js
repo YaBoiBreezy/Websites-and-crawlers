@@ -1,4 +1,19 @@
-export default [
+export let customers = [
+  {
+    username: "alex",
+    name: "Alex",
+  },
+  {
+    username: "ben",
+    name: "Ben",
+  },
+  {
+    username: "mohajer",
+    name: "Mohajer",
+  },
+];
+
+export let products = [
   {
     name: "Tasty Cotton Chair",
     price: 444,
