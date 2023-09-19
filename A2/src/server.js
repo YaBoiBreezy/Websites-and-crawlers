@@ -211,7 +211,16 @@ app.get("/orders",
   async (req, res, next) => {
     try {
 
-      let orders = await db.orders.findMany();    //================= GET ALL THE ORDERS ================================================================================= 
+      const orders = await prisma.order.findMany({
+        include: {
+          customer: true, // Include the associated customer
+          orderItems: {
+            include: {
+              product: true, // Include the associated product for each item
+            },
+          },
+        },
+      });
 
       return res.status(200).format({
         "application/json": () => {
@@ -244,14 +253,30 @@ app.post('/orders', async (req, res, next) => {
     }
 
     let customer = await db.customer.findUnique({
-      where: { name: input.name },
+      where: { name: customerName },
     });
   
     if (!customer) {
       return next(new errors.ResourceNotFoundError("c=Customer not found."));
     }
 
-    //loop check stock and existence of each product, give good errors ==================================================================
+    //loop check stock and existence of each product, give good errors
+    for (const productId in items) {
+      const quantity = items[productId];
+      const product = await prisma.product.findUnique({
+        where: {
+          id: parseInt(productId),
+        },
+      });
+      if (!product) {
+        throw new Error(`Product with ID ${productId} does not exist`);
+      }
+      if (product.stock < quantity) {
+        throw new Error(`Insufficient stock for product with ID ${productId}`);
+      }
+    }
+
+
 
     //loop create order, reduce stocks =======================================================================================
 
@@ -262,18 +287,18 @@ app.post('/orders', async (req, res, next) => {
     });
 
     return res.status(201).format({
-        "application/json": () => {
-          res.json(order);
-        },
-        "text/html": () => {
-          res.redirect(303, `/orders`);
-        },
-      });
+      "application/json": () => {
+        res.json(order);
+      },
+      "text/html": () => {
+        res.redirect(303, `/orders`);
+      },
+    });
 
   } catch (error) {
     return next(error);
   }
-}
+})
 
 
 // handler for getting a specific order
@@ -289,6 +314,12 @@ app.get('/orders/:orderId', async(req,res, next)=>{
 
   let order = await db.order.findUnique({
     where: { id: input.productId },
+    include: { customer: true },
+    orderItems: {
+      include: {
+        product: true, // Include the associated product for each item
+      },
+    },
   });
 
   if (!order) {
@@ -298,10 +329,10 @@ app.get('/orders/:orderId', async(req,res, next)=>{
   
   return res.status(200).format({
     "application/json": () => {
-      res.json({"order":order,"customer":customer});
+      res.json({"order":order});
     },
     "text/html": () => {
-      res.render("orders/index", { order, customer });
+      res.render("orders/index", { order });
     },
   })
 

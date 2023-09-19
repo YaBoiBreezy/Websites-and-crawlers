@@ -5,7 +5,7 @@ html(lang="en")
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width")
 
-    title Products
+    title Orders
 
   body
     header
@@ -30,10 +30,13 @@ html(lang="en")
         each order in orders
           article
             h2
-              a(href=`/orders/${order.id}`)= order.id
+              p
+                span Customer: #order.customer.username
+            a(href=`/orders/${order.id}`)= order.id
             each item in order.orderItems
-            p
-              a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
-              span Quantity: #{item.quantity}
+              p
+                h3 #{item.product.name}
+                a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
+                span Quantity: #{item.quantity}
   else 
     p No orders found.

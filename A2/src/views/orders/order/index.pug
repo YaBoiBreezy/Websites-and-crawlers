@@ -8,7 +8,7 @@ html(lang="en")
     title= order.id
 
   body
-    h1= customer.username
+    h1= order.customer.username
     p 
       a(href=`/orders`) Orders
     p 
@@ -16,5 +16,6 @@ html(lang="en")
       
     each item in order.orderItems
     p
+      h3 #{item.product.name}
       a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
       span Quantity: #{item.quantity}
