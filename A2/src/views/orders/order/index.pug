@@ -16,5 +16,5 @@ html(lang="en")
       
     each item in order.orderItems
     p
-      span Product ID: #{item.productId}
+      a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
       span Quantity: #{item.quantity}
