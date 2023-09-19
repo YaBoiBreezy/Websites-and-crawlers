@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("SQLITE_DB_URL")
+}
+
+model Product {
+  id         Int        @id @default(autoincrement()) @map("product_id")
+  name       String     @map("name")
+  price      Int        @map("price")
+  stock      Int        @map("stock")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  dimensions Dimensions @relation(fields: [id], references: [id])
+  reviews    Review[]
+}
+
+model Dimensions {
+  id        Int       @id @default(autoincrement()) @map("dimensions_id")
+  x         Int       @map("x")
+  y         Int       @map("y")
+  z         Int       @map("z")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  product   Product[]
+}
+
+model Review {
+  id        Int      @id @default(autoincrement()) @map("review_id")
+  productId Int      @map("product_id")
+  rating    Int      @map("rating")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  product   Product  @relation(fields: [productId], references: [id])
+}
