@@ -13,12 +13,13 @@ let app = express();
 // settings
 app.set("host", "localhost");
 app.set("port", 3000);
+app.set("x-powered-by", false);
 app.set("view engine", "pug");
 app.set("views", "./src/views");
 
 // middleware
 app.use(express.static("./src/public"));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // handler for root
@@ -29,7 +30,7 @@ app.get("/", (req, res) => {
 // handler for listing/searching products
 app.get(
   "/products",
-  middleware.validate(schema.ListProductsSchema),
+  middleware.validate(schema.ListProductsRequest),
   async (req, res, next) => {
     try {
       let input = {
@@ -43,9 +44,6 @@ app.get(
           stock: { gt: input.inStock ? 0 : -1 },
         },
         include: {
-          dimensions: {
-            select: { x: true, y: true, z: true },
-          },
           _count: {
             select: { reviews: true },
           },
@@ -76,21 +74,12 @@ app.post(
         name: req.body.name.trim(),
         price: Number(req.body.price),
         stock: Number(req.body.stock),
-        dimensions: {
-          x: Number(req.body.dimensions.x),
-          y: Number(req.body.dimensions.x),
-          z: Number(req.body.dimensions.x),
-        },
+        dimensionX: Number(req.body.dimensionX),
+        dimensionY: Number(req.body.dimensionY),
+        dimensionZ: Number(req.body.dimensionZ),
       };
 
-      let product = await db.product.create({
-        data: {
-          name: input.name,
-          price: input.price,
-          stock: input.stock,
-          dimensions: { create: input.dimensions },
-        },
-      });
+      let product = await db.product.create({ data: input });
 
       return res.status(201).format({
         "application/json": () => {
@@ -109,7 +98,7 @@ app.post(
 // handler for viewing a product
 app.get(
   "/products/:productId",
-  middleware.validate(schema.ViewProductSchema),
+  middleware.validate(schema.ViewProductRequest),
   async (req, res, next) => {
     try {
       let input = {
@@ -119,9 +108,6 @@ app.get(
       let product = await db.product.findUnique({
         where: { id: input.productId },
         include: {
-          dimensions: {
-            select: { x: true, y: true, z: true },
-          },
           _count: {
             select: { reviews: true },
           },
@@ -149,7 +135,7 @@ app.get(
 // handler for listing reviews of a product
 app.get(
   "/products/:productId/reviews",
-  middleware.validate(schema.ListProductReviewsSchema),
+  middleware.validate(schema.ListProductReviewsRequest),
   async (req, res, next) => {
     try {
       let input = {
@@ -182,7 +168,7 @@ app.get(
 // handler for adding a review for a product
 app.post(
   "/products/:productId/reviews",
-  middleware.validate(schema.CreateProductReviewSchema),
+  middleware.validate(schema.CreateProductReviewRequest),
   async (req, res, next) => {
     try {
       let input = {
