@@ -205,6 +205,119 @@ app.post(
   }
 );
 
+
+// handler for creating order
+app.post('/orders/newOrder'), async(req,res, next)=>{
+
+  try {
+    
+    let input= {
+      customerId: Number(req.body.customerId),
+    }
+
+    let customer = await db.customer.findUnique({
+      where: { id: input.productId },
+    });
+  
+    if (!customer) {
+      return next(new errors.ResourceNotFoundError("c=Customer not found."));
+    }
+
+    let order = await db.order.create({
+      data: {
+        customerId: input.customerId,
+      },
+    });
+
+    return res.status(201).format({
+      "application/json": () => {
+        res.json(order);
+      },
+    });
+
+
+  } catch (error) {
+    return next(error);
+  }
+}
+
+//handler for adding order item
+app.post('/orders/newitem', async(req,res, next)=>{
+
+  try{
+    let input = {
+      orderId: Number(req.body.orderId),
+      productId: Number(req.body.productId),
+      quantity: Number(req.body.quantity),
+    }
+
+    let product = await db.product.findUnique({
+      where: { id: input.productId },
+    });
+  
+    if (!product) {
+      return next(new errors.ResourceNotFoundError("Product not found."));
+    }
+
+    let order = await db.order.findUnique({
+      where: { id: input.orderId },
+    });
+  
+    if (!order) {
+      return next(new errors.ResourceNotFoundError("Order not found."));
+    }
+
+    let orderItem = await db.orderItem.create({
+      data: {
+        orderId: input.orderId,
+        productId: input.productId,
+        quantity: input.quantity,
+      },
+    });
+
+    return res.status(201).format({
+      "application/json": () => {
+        res.json(orderItem);
+      },
+    });
+
+  }catch (error) {
+    return next(error);
+  }
+  
+
+})
+
+// handler for getting a specific order
+app.get('/orders/:orderId', async(req,res, next)=>{
+
+  try {
+    let input = {
+      orderId: Number(req.params.orderId),
+    };
+  } catch (error) {
+    return next(error);
+  }
+
+  let order = await db.order.findUnique({
+    where: { id: input.productId },
+  });
+
+  if (!order) {
+    return next(new errors.ResourceNotFoundError("Product not found."));
+  }
+
+  
+  return res.status(200).format({
+    "application/json": () => {
+      res.json(product.reviews);
+    }
+  })
+
+
+})
+
+
 // global error handler
 app.use((error, req, res, next) => {
   console.error(error);
