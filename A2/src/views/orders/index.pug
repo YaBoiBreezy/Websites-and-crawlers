@@ -1,0 +1,39 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width")
+
+    title Products
+
+  body
+    header
+      h1 Orders
+      p 
+        a(href=`/products`) Products
+
+      h2 Search
+      form(method="post" action="/orders")
+        p
+          label(for="search.name", style="margin-right: 0.2em") Order Username
+          input(type="text", id="search.name", name="name", required)
+        p
+          label(for="search.items", style="margin-right: 0.2em") Items
+          input(type="text", id="search.items", name="items", value='{"productID": "quantity", ...}', required)
+        p
+          button(type="submit") Create order
+
+    article
+      h2 List
+      if orders.length > 0
+        each order in orders
+          article
+            h2
+              a(href=`/orders/${order.id}`)= order.name
+            each item in order.items
+            p
+              span Product ID: #{item.product.id}
+              span Quantity: #{item.quantity}
+  else 
+    p No orders found.

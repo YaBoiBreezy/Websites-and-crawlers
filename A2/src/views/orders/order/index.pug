@@ -1,0 +1,20 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width")
+
+    title= order.name
+
+  body
+    h1= order.name
+    p 
+      a(href=`/orders`) Orders
+    p 
+      span Order ID: #{order.id}
+      
+    each item in order.items
+    p
+      span Product ID: #{item.product.id}
+      span Quantity: #{item.quantity}
