@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "start": "node ./src/server.js",
-    "watch": "node --watch ./src/server.js"
+    "watch": "node --watch ./src/server.js",
+    "db:reset": "prisma migrate reset --force"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

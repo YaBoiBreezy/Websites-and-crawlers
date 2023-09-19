@@ -8,17 +8,13 @@ let Price = z.coerce.number().nonnegative();
 
 let Dimension = z.coerce.number().positive();
 
-let Dimensions = z
-  .object({ x: Dimension, y: Dimension, z: Dimension })
-  .strict();
-
 let Count = z.coerce.number().int().nonnegative();
 
 let Name = z.string().trim().nonempty();
 
 let Rating = z.coerce.number().int().min(0).max(10);
 
-let NameQuery = Name.optional();
+let NameQuery = z.string().trim().optional();
 
 let InStockQuery = z.literal("on").optional();
 
@@ -29,19 +25,21 @@ export let CreateProductRequest = z.object({
     .object({
       name: Name,
       price: Price,
-      dimensions: Dimensions,
+      dimensionX: Dimension,
+      dimensionY: Dimension,
+      dimensionZ: Dimension,
       stock: Count,
     })
     .strict(),
 });
 
-export let ViewProductSchema = z.object({
+export let ViewProductRequest = z.object({
   params: z.object({ productId: ID }).strict(),
   query: EmptyObject,
   body: EmptyObject,
 });
 
-export let ListProductsSchema = z.object({
+export let ListProductsRequest = z.object({
   params: EmptyObject,
   query: z
     .object({
@@ -52,13 +50,13 @@ export let ListProductsSchema = z.object({
   body: EmptyObject,
 });
 
-export let CreateProductReviewSchema = z.object({
+export let CreateProductReviewRequest = z.object({
   params: z.object({ productId: ID }),
   query: EmptyObject,
   body: z.object({ rating: Rating }).strict(),
 });
 
-export let ListProductReviewsSchema = z.object({
+export let ListProductReviewsRequest = z.object({
   params: z.object({ productId: ID }).strict(),
   query: EmptyObject,
   body: EmptyObject,

@@ -21,21 +21,13 @@ model Product {
   name       String      @map("name")
   price      Int         @map("price")
   stock      Int         @map("stock")
+  dimensionX Float       @map("dimension_x")
+  dimensionY Float       @map("dimension_y")
+  dimensionZ Float       @map("dimension_z")
   createdAt  DateTime    @default(now()) @map("created_at")
   updatedAt  DateTime    @updatedAt @map("updated_at")
-  dimensions Dimensions  @relation(fields: [id], references: [id])
   reviews    Review[]
-  OrderItem  OrderItem[]
-}
-
-model Dimensions {
-  id        Int       @id @default(autoincrement()) @map("dimensions_id")
-  x         Int       @map("x")
-  y         Int       @map("y")
-  z         Int       @map("z")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  product   Product[]
+  orderItems OrderItem[]
 }
 
 model Review {

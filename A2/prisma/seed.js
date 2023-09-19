@@ -14,7 +14,9 @@ try {
     await prisma.product.create({
       data: {
         ...product,
-        dimensions: { create: dimensions },
+        dimensionX: dimensions.x,
+        dimensionY: dimensions.y,
+        dimensionZ: dimensions.z,
       },
     });
   }

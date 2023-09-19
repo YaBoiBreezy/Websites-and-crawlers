@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "humao.rest-client",
+    "prisma.prisma",
+    "tamasfe.even-better-toml"
+  ]
+}
