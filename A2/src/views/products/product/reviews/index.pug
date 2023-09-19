@@ -1,0 +1,30 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width")
+
+    title Reviews of #{product.name}
+
+  body
+    h1 Reviews of #{product.name}
+    p 
+      a(href=`/products/${product.id}`) #{product.name}
+ 
+    aside
+      h2 Add
+      form(method="post", action=`/products/${product.id}/reviews`)
+        p
+          label(for="add.rating", style="margin-right: 0.25em") Rating
+          input(type="number", id="add.rating", name="rating", min="0", max="10", required)
+        p
+          button(type="submit") Add
+
+    article
+      h2 List
+      if product.reviews.length > 0
+        each review in product.reviews
+          p Rating: #{review.rating}
+      else
+        p No reviews yet.
