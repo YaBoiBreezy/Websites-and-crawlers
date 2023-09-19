@@ -58,7 +58,7 @@ app.post("/products", (req, res) => {
     };
 
     // Validate input data
-    if (!input.name || isNaN(input.price) || isNaN(input.x) || isNaN(input.y) || isNaN(input.z) || isNaN(input.stock)) {
+    if (!input.name || isNaN(input.price) || isNaN(input.x) || isNaN(input.y) || isNaN(input.z) || isNaN(input.stock || input.price<0)) {
       return res.status(400).send("Bad Request - Invalid data");
     }
 
