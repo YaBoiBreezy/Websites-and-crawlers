@@ -5,17 +5,16 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width")
 
-    title= order.id
+    title Order ##{order.id}
 
-  body
-    h1= order.customer.username
+  body    
+    h1 Order ##{order.id}
     p 
       a(href=`/orders`) Orders
-    p 
-      span Order ID: #{order.id}
-      
-    each item in order.orderItems
-    p
-      h3 #{item.product.name}
-      a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
-      span Quantity: #{item.quantity}
+
+    p Customer: #{order.customer.name}
+    p Items:
+    ul
+      each item in order.orderItems
+        li
+          a(href=`/products/${item.product.id}`) #{item.product.name} (×#{item.quantity})

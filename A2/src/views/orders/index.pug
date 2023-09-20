@@ -13,30 +13,29 @@ html(lang="en")
       p 
         a(href=`/products`) Products
 
-      h2 Search
+      h2 Create
       form(method="post" action="/orders")
         p
-          label(for="search.name", style="margin-right: 0.2em") Order Username
-          input(type="text", id="search.name", name="name", required)
+          label(for="create.username", style="margin-right: 0.2em") Username
+          input(type="text", id="create.username", name="name", required)
         p
-          label(for="search.items", style="margin-right: 0.2em") Items
-          input(type="text", id="search.items", name="items", value='{"productID": "quantity", ...}', required)
+          label(for="create.item", style="margin-right: 0.2em") Item
+          input(type="text", id="create.item", name="item", value="", required)
         p
-          button(type="submit") Create order
+          button(type="submit") Create
 
     article
       h2 List
       if orders.length > 0
         each order in orders
           article
-            h2
-              p
-                span Customer: #order.customer.username
-            a(href=`/orders/${order.id}`)= order.id
-            each item in order.orderItems
-              p
-                h3 #{item.product.name}
-                a(href=`/products/#{item.productId}`) Product ID: #{item.productId}
-                span Quantity: #{item.quantity}
+            h3
+              a(href=`/orders/${order.id}`) Order ##{order.id}
+            p Customer: #{order.customer.name}
+            p Items:
+            ul
+              each item in order.orderItems
+                li
+                  a(href=`/products/${item.product.id}`) #{item.product.name} (×#{item.quantity})
       else 
         p No orders found.

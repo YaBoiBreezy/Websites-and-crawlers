@@ -392,7 +392,7 @@ app.get(
         res.json(order);
       },
       "text/html": () => {
-        res.render("orders/index", { order });
+        res.render("orders/order/index", { order });
       },
     });
   }
