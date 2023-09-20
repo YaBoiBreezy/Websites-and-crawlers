@@ -207,11 +207,11 @@ app.post(
 
 // handler for listing/adding orders
 app.get("/orders",
-  middleware.validate(schema.ListOrdersRequest),
+  //middleware.validate(schema.ListOrdersRequest),
   async (req, res, next) => {
     try {
 
-      const orders = await prisma.order.findMany({
+      const orders = await db.order.findMany({
         include: {
           customer: true, // Include the associated customer
           orderItems: {
@@ -263,7 +263,7 @@ app.post('/orders', async (req, res, next) => {
     //loop check stock and existence of each product, give good errors
     for (const productId in items) {
       const quantity = items[productId];
-      const product = await prisma.product.findUnique({
+      const product = await db.product.findUnique({
         where: {
           id: parseInt(productId),
         },
