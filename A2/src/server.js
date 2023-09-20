@@ -205,18 +205,30 @@ app.post(
   }
 );
 
-// handler for listing/adding orders
-app.get("/orders",
-  //middleware.validate(schema.ListOrdersRequest),
+// handler for listing orders
+app.get(
+  "/orders",
+  middleware.validate(schema.ListOrdersRequest),
   async (req, res, next) => {
     try {
-
-      const orders = await db.order.findMany({
-        include: {
-          customer: true, // Include the associated customer
+      let orders = await db.order.findMany({
+        select: {
+          id: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
           orderItems: {
-            include: {
-              product: true, // Include the associated product for each item
+            select: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              quantity: true,
             },
           },
         },
@@ -236,109 +248,155 @@ app.get("/orders",
   }
 );
 
-
-// handler for creating order
-app.post('/orders', async (req, res, next) => {
-  try {
-    if (!req.body.name) {
-      return res.status(400).json({ error: 'Customer name is missing' });
-    }
-    const customerName = String(req.body.name);
-
-    let items;
+// handler for creating an order
+app.post(
+  "/orders",
+  middleware.validate(schema.CreateOrderRequest),
+  async (req, res, next) => {
     try {
-      items = JSON.parse(req.body.items);
-    } catch (error) {
-      return res.status(400).json({ error: 'Invalid JSON format for items' });
-    }
+      let input = {
+        username: req.body.username.trim(),
+        orderItems: req.body.orderItems.map((item) => ({
+          productId: Number(item.productId),
+          quantity: Number(item.quantity),
+        })),
+      };
 
-    let customer = await db.customer.findUnique({
-      where: { name: customerName },
-    });
-  
-    if (!customer) {
-      return next(new errors.ResourceNotFoundError("c=Customer not found."));
-    }
+      let customer = await db.customer.findUnique({
+        where: { username: input.username },
+      });
 
-    //loop check stock and existence of each product, give good errors
-    for (const productId in items) {
-      const quantity = items[productId];
-      const product = await db.product.findUnique({
+      if (!customer) {
+        return next(new errors.ResourceNotFoundError("Customer not found."));
+      }
+
+      let products = await db.product.findMany({
         where: {
-          id: parseInt(productId),
+          id: { in: input.orderItems.map((item) => item.productId) },
         },
       });
-      if (!product) {
-        throw new Error(`Product with ID ${productId} does not exist`);
+
+      let productUpdates = [];
+
+      for (let orderItem of input.orderItems) {
+        let product = products.find(
+          (product) => product.id === orderItem.productId
+        );
+
+        if (!product) {
+          return next(new errors.ResourceNotFoundError("Product not found."));
+        }
+
+        if (product.stock < orderItem.quantity) {
+          return next(
+            new errors.BusinessRuleViolationError(
+              `Insufficient stock for ${product.name}.`
+            )
+          );
+        }
+
+        productUpdates.push(
+          db.product.update({
+            where: { id: orderItem.productId },
+            data: {
+              stock: { decrement: orderItem.quantity },
+            },
+          })
+        );
       }
-      if (product.stock < quantity) {
-        throw new Error(`Insufficient stock for product with ID ${productId}`);
-      }
+
+      let orderCreation = db.order.create({
+        data: {
+          customerId: customer.id,
+          orderItems: { create: input.orderItems },
+        },
+        select: {
+          id: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          orderItems: {
+            select: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+              quantity: true,
+            },
+          },
+        },
+      });
+
+      let results = await db.$transaction([...productUpdates, orderCreation]);
+
+      let order = results.at(-1);
+
+      return res.status(201).format({
+        "application/json": () => {
+          res.json(order);
+        },
+        "text/html": () => {
+          res.redirect(303, `/orders`);
+        },
+      });
+    } catch (error) {
+      return next(error);
     }
+  }
+);
 
+// handler for viewing an order
+app.get(
+  "/orders/:orderId",
+  middleware.validate(schema.ViewOrderRequest),
+  async (req, res, next) => {
+    let input = {
+      orderId: Number(req.params.orderId),
+    };
 
-
-    //loop create order, reduce stocks =======================================================================================
-
-    let order = await db.order.create({
-      data: {
-        customerId: input.customerId,
+    let order = await db.order.findUnique({
+      where: { id: input.orderId },
+      select: {
+        id: true,
+        customer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        orderItems: {
+          select: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            quantity: true,
+          },
+        },
       },
     });
 
-    return res.status(201).format({
+    if (!order) {
+      return next(new errors.ResourceNotFoundError("Order not found."));
+    }
+
+    return res.status(200).format({
       "application/json": () => {
         res.json(order);
       },
       "text/html": () => {
-        res.redirect(303, `/orders`);
+        res.render("orders/index", { order });
       },
     });
-
-  } catch (error) {
-    return next(error);
   }
-})
-
-
-// handler for getting a specific order
-app.get('/orders/:orderId', async(req,res, next)=>{
-
-  try {
-    let input = {
-      orderId: Number(req.params.orderId),
-    };
-  } catch (error) {
-    return next(error);
-  }
-
-  let order = await db.order.findUnique({
-    where: { id: input.productId },
-    include: { customer: true },
-    orderItems: {
-      include: {
-        product: true, // Include the associated product for each item
-      },
-    },
-  });
-
-  if (!order) {
-    return next(new errors.ResourceNotFoundError("Product not found."));
-  }
-
-  
-  return res.status(200).format({
-    "application/json": () => {
-      res.json({"order":order});
-    },
-    "text/html": () => {
-      res.render("orders/index", { order });
-    },
-  })
-
-
-})
-
+);
 
 // global error handler
 app.use((error, req, res, next) => {

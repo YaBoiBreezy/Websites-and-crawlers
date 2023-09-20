@@ -41,12 +41,7 @@ export let ViewProductRequest = z.object({
 
 export let ListProductsRequest = z.object({
   params: EmptyObject,
-  query: z
-    .object({
-      name: NameQuery,
-      inStock: InStockQuery,
-    })
-    .strict(),
+  query: z.object({ name: NameQuery, inStock: InStockQuery }).strict(),
   body: EmptyObject,
 });
 
@@ -58,6 +53,31 @@ export let CreateProductReviewRequest = z.object({
 
 export let ListProductReviewsRequest = z.object({
   params: z.object({ productId: ID }).strict(),
+  query: EmptyObject,
+  body: EmptyObject,
+});
+
+export let CreateOrderRequest = z.object({
+  params: EmptyObject,
+  query: EmptyObject,
+  body: z
+    .object({
+      username: Name,
+      orderItems: z.array(
+        z.object({ productId: ID, quantity: Count }).strict()
+      ),
+    })
+    .strict(),
+});
+
+export let ViewOrderRequest = z.object({
+  params: z.object({ orderId: ID }).strict(),
+  query: EmptyObject,
+  body: EmptyObject,
+});
+
+export let ListOrdersRequest = z.object({
+  params: EmptyObject,
   query: EmptyObject,
   body: EmptyObject,
 });

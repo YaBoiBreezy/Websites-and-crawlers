@@ -49,3 +49,39 @@ Accept: application/json
 # @prompt productId
 GET {{baseUrl}}/products/{{productId}}/reviews HTTP/1.1
 Accept: application/json
+
+###
+# @name createOrder
+# @prompt username
+# @prompt aProductId
+# @prompt aQuantity
+# @prompt anotherProductId
+# @prompt anotherQuantity
+POST {{baseUrl}}/orders HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "username": "{{username}}",
+    "orderItems": [
+        {
+            "productId": {{aProductId}},
+            "quantity": {{aQuantity}}
+        },
+        {
+            "productId": {{anotherProductId}},
+            "quantity": {{anotherQuantity}}
+        }
+    ]
+}
+
+###
+# @name listOrders
+GET {{baseUrl}}/orders HTTP/1.1
+Accept: application/json
+
+###
+# @name viewOrder
+# @prompt orderId
+GET {{baseUrl}}/orders/{{orderId}} HTTP/1.1
+Accept: application/json
