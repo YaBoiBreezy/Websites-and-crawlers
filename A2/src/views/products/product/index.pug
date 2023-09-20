@@ -8,9 +8,12 @@ html(lang="en")
     title= product.name
 
   body
+    nav
+      a(href="/products") Products
+      span  • 
+      a(href="/orders") Orders
+
     h1= product.name
-    p 
-      a(href=`/products`) Search
     p 
       a(href=`/products/${product.id}/reviews`) #{product._count.reviews} Reviews
     p ID: #{product.id}

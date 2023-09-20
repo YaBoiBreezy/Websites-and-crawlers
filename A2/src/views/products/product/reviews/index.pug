@@ -8,9 +8,12 @@ html(lang="en")
     title Reviews of #{product.name}
 
   body
+    nav
+      a(href="/products") Products
+      span  • 
+      a(href="/orders") Orders
+
     h1 Reviews of #{product.name}
-    p 
-      a(href=`/products/${product.id}`) #{product.name}
  
     aside
       h2 Add

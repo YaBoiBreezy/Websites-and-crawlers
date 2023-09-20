@@ -8,34 +8,23 @@ html(lang="en")
     title Orders
 
   body
-    header
-      h1 Orders
-      p 
-        a(href=`/products`) Products
+    nav
+      a(href="/products") Products
+      span  • 
+      a(href="/orders") Orders
 
-      h2 Create
-      form(method="post" action="/orders")
-        p
-          label(for="create.username", style="margin-right: 0.2em") Username
-          input(type="text", id="create.username", name="name", value='Alex', required)
-        p
-          label(for="create.orderItems", style="margin-right: 0.2em") Order Items
-          input(type="text", id="create.orderItems", name="orderItems", value='[{"productId": 2,"quantity": 3},{"productId": 3,"quantity": 2}]', required)
-        p
-          button(type="submit") Create
+    h1 Orders
 
-    article
-      h2 List
-      if orders.length > 0
-        each order in orders
-          article
-            h3
-              a(href=`/orders/${order.id}`) Order ##{order.id}
-            p Customer: #{order.customer.name}
-            p Items:
-            ul
-              each item in order.orderItems
-                li
-                  a(href=`/products/${item.product.id}`) #{item.product.name} (×#{item.quantity})
-      else 
-        p No orders found.
+    if orders.length > 0
+      each order in orders
+        article
+          h2
+            a(href=`/orders/${order.id}`) Order ##{order.id}
+          p Customer: #{order.customer.name}
+          p Items:
+          ul
+            each item in order.orderItems
+              li
+                a(href=`/products/${item.product.id}`) #{item.product.name} (×#{item.quantity})
+    else 
+      p No orders found.

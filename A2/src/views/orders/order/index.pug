@@ -7,7 +7,12 @@ html(lang="en")
 
     title Order ##{order.id}
 
-  body    
+  body
+    nav
+      a(href="/products") Products
+      span  • 
+      a(href="/orders") Orders
+  
     h1 Order ##{order.id}
     p 
       a(href=`/orders`) Orders
