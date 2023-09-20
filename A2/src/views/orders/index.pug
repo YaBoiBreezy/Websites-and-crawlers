@@ -19,8 +19,8 @@ html(lang="en")
           label(for="create.username", style="margin-right: 0.2em") Username
           input(type="text", id="create.username", name="name", required)
         p
-          label(for="create.item", style="margin-right: 0.2em") Item
-          input(type="text", id="create.item", name="item", value="", required)
+          label(for="create.orderItems", style="margin-right: 0.2em") Order Items
+          input(type="text", id="create.orderItems", name="orderItems", value='[{"productId": 1,"quantity": 5},{"productId": 2,"quantity": 3},{"productId": 3,"quantity": 2}]', required)
         p
           button(type="submit") Create
 

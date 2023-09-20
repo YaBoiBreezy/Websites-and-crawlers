@@ -249,13 +249,14 @@ app.get(
 );
 
 // handler for creating an order
-app.post(
-  "/orders",
-  middleware.validate(schema.CreateOrderRequest),
+app.post("/orders",
+  //middleware.validate(schema.CreateOrderRequest),
   async (req, res, next) => {
     try {
+      console.log(req.body.username)
+      console.log(req.body.orderItems)
       let input = {
-        username: req.body.username.trim(),
+        username: req.body.username,
         orderItems: req.body.orderItems.map((item) => ({
           productId: Number(item.productId),
           quantity: Number(item.quantity),
