@@ -253,11 +253,10 @@ app.post("/orders",
   //middleware.validate(schema.CreateOrderRequest),
   async (req, res, next) => {
     try {
-      console.log(req.body.username)
-      console.log(req.body.orderItems)
+      console.log(req.body)
       let input = {
-        username: req.body.username,
-        orderItems: req.body.orderItems.map((item) => ({
+        username: req.body.name.toLowerCase(),
+        orderItems: JSON.parse(req.body.orderItems).map((item) => ({
           productId: Number(item.productId),
           quantity: Number(item.quantity),
         })),

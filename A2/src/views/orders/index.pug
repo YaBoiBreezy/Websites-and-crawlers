@@ -17,10 +17,10 @@ html(lang="en")
       form(method="post" action="/orders")
         p
           label(for="create.username", style="margin-right: 0.2em") Username
-          input(type="text", id="create.username", name="name", required)
+          input(type="text", id="create.username", name="name", value='Alex', required)
         p
           label(for="create.orderItems", style="margin-right: 0.2em") Order Items
-          input(type="text", id="create.orderItems", name="orderItems", value='[{"productId": 1,"quantity": 5},{"productId": 2,"quantity": 3},{"productId": 3,"quantity": 2}]', required)
+          input(type="text", id="create.orderItems", name="orderItems", value='[{"productId": 2,"quantity": 3},{"productId": 3,"quantity": 2}]', required)
         p
           button(type="submit") Create
 
