@@ -1,0 +1,18 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width")
+
+    title page.id
+
+  body
+  
+    h1 Links to URL:
+    h1 a(href=page.url)= page.url (#{page.incomingLinks}):
+
+    ul
+      each pageLink in page.links
+        li
+          a(href=page.url)= page.url
