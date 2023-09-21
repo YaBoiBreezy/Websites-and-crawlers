@@ -267,7 +267,11 @@ app.post(
       });
 
       if (!customer) {
-        return next(new errors.ResourceNotFoundError("Customer not found."));
+        return next(
+          new errors.ResourceNotFoundError(
+            `Customer ${input.username} not found.`
+          )
+        );
       }
 
       let products = await db.product.findMany({
@@ -284,7 +288,11 @@ app.post(
         );
 
         if (!product) {
-          return next(new errors.ResourceNotFoundError("Product not found."));
+          return next(
+            new errors.ResourceNotFoundError(
+              `Product ${orderItem.productId} not found.`
+            )
+          );
         }
 
         if (product.stock < orderItem.quantity) {
