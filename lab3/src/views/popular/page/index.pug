@@ -5,14 +5,14 @@ html(lang="en")
     meta(charset="UTF-8")
     meta(name="viewport" content="width=device-width")
 
-    title page.id
+    title #{page.id}
 
   body
   
     h1 Links to URL:
-    h1 a(href=page.url)= page.url (#{page.incoming.length}):
+    h1 a(href=page.url)= #{page.url} (#{page.incoming.length}):
 
     ul
-      each pageLink in page.incoming
+      each page in page.incoming
         li
           a(href=page.url)= page.url

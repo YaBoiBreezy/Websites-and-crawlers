@@ -1,0 +1,50 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width")
+
+    title #{endpoint} #{page.id}
+
+  body
+    nav
+      a(href="/fruits") Fruits
+      span  • 
+      a(href="/personal") Personal
+
+    h1= page.title
+    p 
+      a(href=`${page.url}`) #{page.url}
+    p ID: #{page.id}
+    
+    article
+      h2 Incoming
+      if pages.incoming.length > 0
+        ul
+        each incoming in page.incoming
+          li
+            a(href=`/${endpoint}/${incoming.id}`)= incoming.url
+      else 
+        p No incoming found.
+
+    article
+      h2 Outgoing
+      if pages.outgoing.length > 0
+        ul
+        each outgoing in page.outgoing
+          li
+            a(href=`/${endpoint}/${outgoing.id}`)= outgoing.url
+      else 
+        p No outgoing found.
+
+    article
+      h2 Word frequency
+      if pages.wordFreq.length > 0
+        ul
+        each wordFreq in page.wordFreq
+          li
+            p
+              #{wordFreq.word} occurred #{wordFreq.freq} times
+      else 
+        p No words found.

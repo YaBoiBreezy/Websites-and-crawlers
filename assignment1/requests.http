@@ -1,87 +1,31 @@
 @baseUrl = http://localhost:3000
 
 ###
-# @name listProducts
-GET {{baseUrl}}/products HTTP/1.1
-Accept: application/json
-
-###
-# @name addProduct
-# @prompt name
-# @prompt price
-# @prompt dimensionX
-# @prompt dimensionY
-# @prompt dimensionZ
-# @prompt stock
-POST {{baseUrl}}/products HTTP/1.1
+# @name fruits
+# @prompt q
+# @prompt boost
+# @prompt limit
+POST {{baseUrl}}/fruits HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 
-{
-    "name": "{{name}}",
-    "price": {{price}},
-    "dimensionX": {{dimensionX}},
-    "dimensionY": {{dimensionY}},
-    "dimensionZ": {{dimensionZ}},
-    "stock": {{stock}}
+{    //only adds the values to the payload if they have values
+    {{#if q}}"q": {{q}},{{/if}}
+    {{#if boost}}"boost": {{boost}},{{/if}}
+    {{#if limit}}"limit": {{limit}}{{/if}}
 }
 
 ###
-# @name viewProduct
-# @prompt productId
-GET {{baseUrl}}/products/{{productId}} HTTP/1.1
-Accept: application/json
-
-###
-# @name addProductReview
-# @prompt productId
-# @prompt rating
-POST {{baseUrl}}/products/{{productId}}/reviews HTTP/1.1
+# @name personal
+# @prompt q
+# @prompt boost
+# @prompt limit
+POST {{baseUrl}}/personal HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 
-{
-    "rating": {{rating}}
+{    //only adds the values to the payload if they have values
+    {{#if q}}"q": {{q}},{{/if}}
+    {{#if boost}}"boost": {{boost}},{{/if}}
+    {{#if limit}}"limit": {{limit}}{{/if}}
 }
-
-###
-# @name listProductReviews
-# @prompt productId
-GET {{baseUrl}}/products/{{productId}}/reviews HTTP/1.1
-Accept: application/json
-
-###
-# @name createOrder
-# @prompt username
-# @prompt aProductId
-# @prompt aQuantity
-# @prompt anotherProductId
-# @prompt anotherQuantity
-POST {{baseUrl}}/orders HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-
-{
-    "username": "{{username}}",
-    "orderItems": [
-        {
-            "productId": {{aProductId}},
-            "quantity": {{aQuantity}}
-        },
-        {
-            "productId": {{anotherProductId}},
-            "quantity": {{anotherQuantity}}
-        }
-    ]
-}
-
-###
-# @name listOrders
-GET {{baseUrl}}/orders HTTP/1.1
-Accept: application/json
-
-###
-# @name viewOrder
-# @prompt orderId
-GET {{baseUrl}}/orders/{{orderId}} HTTP/1.1
-Accept: application/json
