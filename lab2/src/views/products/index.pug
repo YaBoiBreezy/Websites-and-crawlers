@@ -1,0 +1,67 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width")
+
+    title Products
+
+  body
+    nav
+      a(href="/products") Products
+      span  • 
+      a(href="/orders") Orders
+
+    header
+      h1 Products
+
+      h2 Search
+      form(method="get" action="/products")
+        p
+          label(for="search.name", style="margin-right: 0.2em") Name
+          input(type="text", id="search.name", name="name")
+        p
+          label(for="search.inStock") In stock
+          input(type="checkbox", id="search.inStock" name="inStock")
+        p
+          button(type="submit") Search
+
+    aside
+      h2 Add
+      form(method="post", action="/products")
+        p
+          label(for="add.name", style="margin-right: 0.25em") Name
+          input(type="text", id="add.name", name="name", required)
+        p
+          label(for="add.price", style="margin-right: 0.25em") Price
+          input(type="number", id="add.price", name="price", min="0", required)
+        p 
+          label(for="add.x", style="margin-right: 0.25em") Dimension X
+          input(type="number", id="add.x", name="dimensionX", min="0", required)
+        p 
+          label(for="add.y", style="margin-right: 0.25em") Dimension Y
+          input(type="number", id="add.y", name="dimensionY", min="0", required)
+        p 
+          label(for="add.z", style="margin-right: 0.25em") Dimension Z
+          input(type="number", id="add.z", name="dimensionZ", min="0", required)
+        p 
+          label(for="add.stock", style="margin-right: 0.25em") Stock
+          input(type="number", id="add.stock", name="stock", min="0", required)
+        p
+          button(type="submit") Add
+
+    article
+      h2 List
+      if products.length > 0
+        each product in products
+          article
+            h2
+              a(href=`/products/${product.id}`)= product.name
+            p ID: #{product.id}
+            p Price: #{product.price}
+            p Dimensions: #{product.dimensionX} × #{product.dimensionY} × #{product.dimensionZ}
+            p Stock: #{product.stock}
+            p Reviews: #{product._count.reviews}
+      else 
+        p No products found.
