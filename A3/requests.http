@@ -1,5 +1,6 @@
 @baseUrl = http://localhost:3000
-
+//we don't need this file for this assignment
+<!--
 ###
 # @name listProducts
 GET {{baseUrl}}/products HTTP/1.1
@@ -85,3 +86,4 @@ Accept: application/json
 # @prompt orderId
 GET {{baseUrl}}/orders/{{orderId}} HTTP/1.1
 Accept: application/json
+-->

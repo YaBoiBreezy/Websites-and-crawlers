@@ -30,7 +30,17 @@ app.get("/", (req, res) => {
 // handler for listing top 10 pages by incoming links
 app.get("/popular", async (req, res, next) => {
   try {
-    let topPages = 1; //MAKE THIS GET THE LIST OF TOP 10, FAST
+    const topPages = await prisma.page.findMany({
+      include: {
+        incoming: true,
+      },
+      orderBy: {
+        incoming: {
+          _count: "desc",
+        },
+      },
+      take: 10,
+    });
 
     return res.status(200).format({
       "application/json": () => {
@@ -56,8 +66,10 @@ app.get(
       };
 
       let page = await db.product.findUnique({
-        //GET PAGE BY ID, INCLUDE LIST OF OTHER PAGES
         where: { id: input.pageId },
+        include: {
+          incoming: true,
+        },
       });
 
       if (!page) {

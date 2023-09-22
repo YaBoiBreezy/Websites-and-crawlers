@@ -14,4 +14,6 @@ html(lang="en")
       each page in topPages
         li
           a(href=`/popular/${page.id}`)= page.url
-      |      (#{page.incomingLinks})
+      |      (#{page.incoming.length})
+
+      
