@@ -1,9 +1,9 @@
 {
   "private": true,
   "type": "module",
-  "name": "@comp-4602/lab-2",
+  "name": "@comp-4602/lab-3",
   "version": "1.0.0",
-  "description": "COMP 4601 Lab 2",
+  "description": "COMP 4601 Lab 3",
   "license": "UNLICENSED",
   "contributors": [
     "Alexander Breeze",
@@ -29,6 +29,6 @@
     "zod-validation-error": "1.5.0"
   },
   "devDependencies": {
-    "prisma": "5.3.1"
+    "prisma": "^5.3.1"
   }
 }

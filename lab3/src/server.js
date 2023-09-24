@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 // handler for listing top 10 pages by incoming links
 app.get("/popular", async (req, res, next) => {
   try {
-    const topPages = await prisma.page.findMany({
+    const topPages = await db.page.findMany({
       include: {
         incoming: true,
       },
