@@ -35,7 +35,6 @@ const c = new Crawler({
           });
 
           if (!page) {
-            console.log(page.url );
 
             // console.log('\t'+$(link).text() + ':  ' + $(link).attr('href'));
 
@@ -52,7 +51,11 @@ const c = new Crawler({
                 console.error("Error adding page record:", error);
             }
             c.queue(absoluteLink);
-          } 
+          } else{
+            
+            console.log("found page: "+page.url );
+          }
+          
         } catch (error) {
           console.error("Error retrieving page record:", error);
         }
