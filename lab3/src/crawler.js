@@ -2,7 +2,6 @@
 import Crawler from "crawler";
 import { PrismaClient } from "@prisma/client";
 
-
 // database
 let db = new PrismaClient();
 
@@ -35,31 +34,25 @@ const c = new Crawler({
           });
 
           if (!page) {
-
             // console.log('\t'+$(link).text() + ':  ' + $(link).attr('href'));
 
             //creating new page record
             try {
-                const newPage = db.page.create({
-                data: {
-                    url: absoluteLink,
-                },
-                });
+              let input = { url: absoluteLink };
+              const newPage = await db.page.create({ data: input });
 
-                console.log("New Page Created:", newPage.url);
+            //   console.log("New Page Created:", JSON.stringify(newPage));
+            console.log(newPage.url);
             } catch (error) {
-                console.error("Error adding page record:", error);
+              console.error("Error adding page record:", error);
             }
             c.queue(absoluteLink);
-          } else{
-            
-            console.log("found page: "+page.url );
+          } else {
+            // console.log("found page: " + page.url);
           }
-          
         } catch (error) {
           console.error("Error retrieving page record:", error);
         }
-
       });
     }
     done();

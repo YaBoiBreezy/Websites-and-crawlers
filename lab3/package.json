@@ -13,7 +13,8 @@
   "scripts": {
     "start": "node ./src/server.js",
     "watch": "node --watch ./src/server.js",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "db:migrate": "npx prisma migrate dev"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
