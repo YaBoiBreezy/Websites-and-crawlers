@@ -1,10 +1,6 @@
 //Required module (install via NPM - npm install crawler)
-import Crawler from "crawler";
-import { PrismaClient } from "@prisma/client";
-
-// database
-let db = new PrismaClient();
-
+const Crawler = require("crawler");
+let visite= new Set();
 const c = new Crawler({
   maxConnections: 10, //use this for parallel, rateLimit for individual
   //rateLimit: 1000,
@@ -17,41 +13,16 @@ const c = new Crawler({
       let $ = res.$; //get cheerio data, see cheerio docs for info
       let links = $("a"); //get all links from page
       const url = res.request.uri.href;
-
-      $(links).each(async function (i, link) {
+      visite.add(url)
+      console.log(url);
+      $(links).each(function (i, link) {
+        //Log out links
+        //In real crawler, do processing, decide if they need to be added to queue
+        //   console.log($(link).text() + ':  ' + $(link).attr('href'));
         const absoluteLink = new URL($(link).attr("href"), url).href;
-
-        try {
-          // Use the Prisma client to find a page record by its URL
-          const page = await db.page.findUnique({
-            where: {
-              url: absoluteLink,
-            },
-            select: {
-              url: true,
-              visitedAt: true,
-            },
-          });
-
-          if (!page) {
-            // console.log('\t'+$(link).text() + ':  ' + $(link).attr('href'));
-
-            //creating new page record
-            try {
-              let input = { url: absoluteLink };
-              const newPage = await db.page.create({ data: input });
-
-            //   console.log("New Page Created:", JSON.stringify(newPage));
-            console.log(newPage.url);
-            } catch (error) {
-              console.error("Error adding page record:", error);
-            }
-            c.queue(absoluteLink);
-          } else {
-            // console.log("found page: " + page.url);
-          }
-        } catch (error) {
-          console.error("Error retrieving page record:", error);
+        if(!visite.has(absoluteLink)){
+          console.log("\t" + absoluteLink);
+          c.queue(absoluteLink);
         }
       });
     }
