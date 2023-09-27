@@ -1,5 +1,6 @@
 //Required module (install via NPM - npm install crawler)
-const Crawler = require("crawler");
+import Crawler from "crawler";
+
 let visite= new Set();
 const c = new Crawler({
   maxConnections: 10, //use this for parallel, rateLimit for individual
