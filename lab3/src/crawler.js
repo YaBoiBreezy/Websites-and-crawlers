@@ -33,7 +33,7 @@ const c = new Crawler({
       if (!page) {
         page = await db.page.create({ data: { url: url } });
       }
-      console.log(page.id + ": " + page.url);
+      // console.log(page.id + ": " + page.url);
 
       $(links).each(async function (i, link) {
         //Log out links
@@ -54,9 +54,14 @@ const c = new Crawler({
 
         if (!newPage) {
           newPage = await db.page.create({
-            data: { url: absoluteLink },
+            data: {
+              url: absoluteLink,
+              incoming: { connect: [{ id: page.id }] },
+            },
+
           });
         }
+
         newPage = await db.page.findUnique({
           where: {
             url: absoluteLink,
@@ -65,21 +70,38 @@ const c = new Crawler({
             id: true,
             url: true,
             outgoing: true,
+            incoming: true,
           },
         });
-        console.log("\t" + newPage.id + ": " + newPage.url);
+        
+        console.log(newPage);
 
         db.page.update({
           where: { id: page.id },
-          data: { outgoing: newPage.id },
+          data: {
+            outgoing: { connect: [{ id: newPage.id }] },
+          },
         });
-        console.log(newPage);
+
+        page = await db.page.findUnique({
+          where: {
+            url: url,
+          },
+          select: {
+            id: true,
+            url: true,
+            outgoing: true,
+          },
+        });
+
+        
         if (newPage.outgoing.length == 0) {
-          //change this to check for the page contents
           c.queue(newPage.url);
         }
+
       });
     }
+
     done();
   },
 });
@@ -87,21 +109,9 @@ const c = new Crawler({
 //Perhaps a useful event
 //Triggered when the queue becomes empty
 //There are some other events, check crawler docs
-c.on("drain", function () {
+c.on("drain", async function () {
   console.log("Done.");
 });
 
 //Queue a URL, which starts the crawl
 c.queue("https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html");
-
-async function findPage(url) {
-  return await db.page.findUnique({
-    where: {
-      url: url,
-    },
-    select: {
-      id: true,
-      url: true,
-    },
-  });
-}
