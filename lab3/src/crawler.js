@@ -57,7 +57,16 @@ const c = new Crawler({
             data: { url: absoluteLink },
           });
         }
-
+        newPage = await db.page.findUnique({
+          where: {
+            url: absoluteLink,
+          },
+          select: {
+            id: true,
+            url: true,
+            outgoing: true,
+          },
+        });
         console.log("\t" + newPage.id + ": " + newPage.url);
 
         db.page.update({
