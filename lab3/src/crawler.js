@@ -19,6 +19,8 @@ const c = new Crawler({
       let links = $("a"); //get all links from page
       const url = res.request.uri.href;
 
+      // console.log($.html());
+
       let page = await db.page.findUnique({
         where: {
           url: url,
@@ -33,6 +35,26 @@ const c = new Crawler({
       if (!page) {
         page = await db.page.create({ data: { url: url } });
       }
+      db.page.update({
+        where: { id: page.id },
+        data: {
+          content: $.html(),
+        },
+      });
+
+      page = await db.page.findUnique({
+        where: {
+          url: url,
+        },
+        select: {
+          id: true,
+          url: true,
+          outgoing: true,
+          content: true,
+        },
+      });
+      // console.log($.html().toString());
+      console.log(page);
       // console.log(page.id + ": " + page.url);
 
       $(links).each(async function (i, link) {
@@ -58,7 +80,6 @@ const c = new Crawler({
               url: absoluteLink,
               incoming: { connect: [{ id: page.id }] },
             },
-
           });
         }
 
@@ -73,8 +94,6 @@ const c = new Crawler({
             incoming: true,
           },
         });
-        
-        console.log(newPage);
 
         db.page.update({
           where: { id: page.id },
@@ -83,22 +102,9 @@ const c = new Crawler({
           },
         });
 
-        page = await db.page.findUnique({
-          where: {
-            url: url,
-          },
-          select: {
-            id: true,
-            url: true,
-            outgoing: true,
-          },
-        });
-
-        
         if (newPage.outgoing.length == 0) {
           c.queue(newPage.url);
         }
-
       });
     }
 
