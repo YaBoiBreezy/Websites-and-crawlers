@@ -22,6 +22,8 @@ app.use(express.static("./src/public"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
+console.log(`There are ${await db.page.count()} pages in the db`);
+
 // handler for root
 app.get("/", (req, res) => {
   return res.redirect("/popular");
@@ -32,10 +34,14 @@ app.get("/popular", async (req, res, next) => {
   try {
     const topPages = await db.page.findMany({
       include: {
-        incoming: true,
+        incomingLinks: {
+          include: {
+            source: true,
+          },
+        },
       },
       orderBy: {
-        incoming: {
+        incomingLinks: {
           _count: "desc",
         },
       },
@@ -47,7 +53,7 @@ app.get("/popular", async (req, res, next) => {
         res.json(topPages);
       },
       "text/html": () => {
-        res.render("popular/index", { popular });
+        res.render("popular/index", { topPages });
       },
     });
   } catch (error) {
@@ -58,17 +64,21 @@ app.get("/popular", async (req, res, next) => {
 // handler for viewing a specific url
 app.get(
   "/popular/:pageId",
-  middleware.validate(schema.ViewPageRequest),
+  //middleware.validate(schema.ViewPageRequest),   <===THIS DOESNT WORK
   async (req, res, next) => {
     try {
       let input = {
         pageId: Number(req.params.pageId),
       };
 
-      let page = await db.product.findUnique({
+      let page = await db.page.findUnique({
         where: { id: input.pageId },
         include: {
-          incoming: true,
+          incomingLinks: {
+            include: {
+              source: true,
+            },
+          },
         },
       });
 
