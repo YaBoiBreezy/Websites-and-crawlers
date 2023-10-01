@@ -9,8 +9,8 @@ html(lang="en")
 
   body
   
-    h1 Links to URL:
-    h1 a(href=page.url)= #{page.url} (#{page.incomingLinks.length}):
+    h3 Links to URL:
+    h3 a(href=page.url)= #{page.url} (#{page.incomingLinks.length}):
 
     ul
       each link in page.incomingLinks

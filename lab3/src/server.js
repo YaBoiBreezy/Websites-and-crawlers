@@ -64,7 +64,7 @@ app.get("/popular", async (req, res, next) => {
 // handler for viewing a specific url
 app.get(
   "/popular/:pageId",
-  //middleware.validate(schema.ViewPageRequest),   <===THIS DOESNT WORK
+  middleware.validate(schema.ViewPageRequest),
   async (req, res, next) => {
     try {
       let input = {
