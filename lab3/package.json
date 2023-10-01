@@ -13,23 +13,23 @@
   "scripts": {
     "start": "node ./src/server.js",
     "watch": "node --watch ./src/server.js",
-    "db:reset": "prisma migrate reset --force",
-    "db:migrate": "npx prisma migrate dev"
+    "crawl": "node ./src/crawler.js",
+    "db:push": "prisma db push --accept-data-loss",
+    "db:reset": "prisma migrate reset --force"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@prisma/client": "5.3.1",
-    "cheerio": "^1.0.0-rc.12",
-    "crawler": "^1.4.0",
+    "cheerio": "1.0.0-rc.12",
+    "crawler": "1.4.0",
     "express": "4.18.2",
     "pug": "3.0.2",
-    "uuid": "^9.0.1",
     "zod": "3.22.2",
     "zod-validation-error": "1.5.0"
   },
   "devDependencies": {
-    "prisma": "^5.3.1"
+    "prisma": "5.3.1"
   }
 }

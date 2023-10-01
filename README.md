@@ -2,5 +2,6 @@
 
 ## Contents
 
-1. [Lab 1](./A1)
-2. [Lab 2](./A2)
+1. [Lab 1](./lab1)
+2. [Lab 2](./lab2)
+3. [Lab 3](./lab3)

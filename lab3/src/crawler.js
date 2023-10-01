@@ -1,123 +1,116 @@
-//Required module (install via NPM - npm install crawler)
 import Crawler from "crawler";
 import { PrismaClient } from "@prisma/client";
 
-// database
 let db = new PrismaClient();
+let batchSize = 5;
+let crawler = createCrawler(db, batchSize);
+let seedUrl =
+  "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
 
-let visite = new Set();
-const c = new Crawler({
-  maxConnections: 10, //use this for parallel, rateLimit for individual
-  //rateLimit: 1000,
+try {
+  await db.page.create({ data: { url: seedUrl } });
+  await crawlBatch(db, crawler, batchSize, seedUrl);
+} catch (error) {
+  console.log(error);
+} finally {
+  await db.$disconnect();
+}
 
-  // This will be called for each crawled page
-  callback: async function (error, res, done) {
-    if (error) {
-      console.log(error);
-    } else {
-      let $ = res.$; //get cheerio data, see cheerio docs for info
-      let links = $("a"); //get all links from page
-      const url = res.request.uri.href;
+function createCrawler(db, batchSize) {
+  let crawler = new Crawler({
+    maxConnections: batchSize,
+    callback: async (error, res, done) => {
+      let pageUrl = res.options.uri;
 
-      // console.log($.html());
-
-      let page = await db.page.findUnique({
-        where: {
-          url: url,
-        },
-        select: {
-          id: true,
-          url: true,
-          outgoing: true,
-        },
-      });
-
-      if (!page) {
-        page = await db.page.create({ data: { url: url } });
+      if (error) {
+        console.error(error);
+        done();
+        return;
       }
-      db.page.update({
-        where: { id: page.id },
+
+      console.log(`Crawling ${pageUrl}`);
+
+      let links = new Set();
+
+      res.$("a").each((_, link) => {
+        let targetUrl = new URL(res.$(link).attr("href"), pageUrl).href;
+
+        links.add(targetUrl);
+      });
+
+      await db.crawl.create({
         data: {
-          content: $.html(),
+          pageId: res.options.pageId,
+          content: res.body,
         },
       });
 
-      page = await db.page.findUnique({
-        where: {
-          url: url,
-        },
-        select: {
-          id: true,
-          url: true,
-          outgoing: true,
-          content: true,
-        },
-      });
-      // console.log($.html().toString());
-      console.log(page);
-      // console.log(page.id + ": " + page.url);
+      for (let link of links) {
+        let targetPage;
 
-      $(links).each(async function (i, link) {
-        //Log out links
-        //In real crawler, do processing, decide if they need to be added to queue
-        //   console.log($(link).text() + ':  ' + $(link).attr('href'));
-        const absoluteLink = new URL($(link).attr("href"), url).href;
+        try {
+          targetPage = await db.page.create({
+            data: { url: link },
+          });
+        } catch (error) {
+          if (error.code === "P2002") {
+            targetPage = await db.page.findFirst({
+              where: { url: link },
+            });
+          }
+        }
 
-        let newPage = await db.page.findUnique({
+        let existingLink = await db.link.findFirst({
           where: {
-            url: absoluteLink,
-          },
-          select: {
-            id: true,
-            url: true,
-            outgoing: true,
+            sourceId: res.options.pageId,
+            targetId: targetPage.id,
           },
         });
 
-        if (!newPage) {
-          newPage = await db.page.create({
+        if (!existingLink) {
+          await db.link.create({
             data: {
-              url: absoluteLink,
-              incoming: { connect: [{ id: page.id }] },
+              sourceId: res.options.pageId,
+              targetId: targetPage.id,
             },
           });
         }
+      }
 
-        newPage = await db.page.findUnique({
-          where: {
-            url: absoluteLink,
-          },
-          select: {
-            id: true,
-            url: true,
-            outgoing: true,
-            incoming: true,
-          },
-        });
+      done();
+    },
+  });
 
-        db.page.update({
-          where: { id: page.id },
-          data: {
-            outgoing: { connect: [{ id: newPage.id }] },
-          },
-        });
+  crawler.on("drain", async () => {
+    let remaining = await db.page.count({
+      where: {
+        crawls: { none: {} },
+      },
+    });
 
-        if (newPage.outgoing.length == 0) {
-          c.queue(newPage.url);
-        }
-      });
+    if (remaining > 0) {
+      crawlBatch(db, crawler, crawler.options.maxConnections);
+    } else {
+      console.log("Done.");
+      await db.$disconnect();
     }
+  });
 
-    done();
-  },
-});
+  return crawler;
+}
 
-//Perhaps a useful event
-//Triggered when the queue becomes empty
-//There are some other events, check crawler docs
-c.on("drain", async function () {
-  console.log("Done.");
-});
+async function crawlBatch(db, crawler, size) {
+  let batch = await db.page.findMany({
+    take: size,
+    where: {
+      crawls: { none: {} },
+    },
+  });
 
-//Queue a URL, which starts the crawl
-c.queue("https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html");
+  for (let page of batch) {
+    crawler.queue({
+      uri: page.url,
+      pageId: page.id,
+    });
+  }
+}

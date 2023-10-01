@@ -1,9 +1,0 @@
--- CreateTable
-CREATE TABLE "Page" (
-    "page_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "url" TEXT NOT NULL,
-    "visited_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Page_incoming_id_fkey" FOREIGN KEY ("page_id") REFERENCES "Page" ("page_id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "Page_outgoing_id_fkey" FOREIGN KEY ("page_id") REFERENCES "Page" ("page_id") ON DELETE RESTRICT ON UPDATE CASCADE
-
-);
