@@ -1,0 +1,37 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width")
+
+    title Products
+
+  body
+    nav
+      a(href="/popular") Popular
+
+    header
+      h2 Search
+      form(method="get" action="/")
+        p
+          label(for="search.query", style="margin-right: 0.2em") Query
+          input(type="text", id="search.query", name="query")
+        p
+          button(type="submit") Search
+
+    article
+      h2 Results
+      if topPages.length > 0
+        ul
+        each page in topPages
+          li
+            a(href=`/popular/${page.id}`)= page.url 
+            | (#{page.searchScore.length})
+          article
+            h2
+              a(href=`/popular/${page.id}`)= page.title 
+            h3 a(href=page.url)= #{page.url}
+            p Score: #{page.score}
+      else 
+        p No pages found.
