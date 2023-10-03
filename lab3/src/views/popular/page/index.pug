@@ -12,11 +12,10 @@ html(lang="en")
       a(href="/") Search
       span  • 
       a(href="/popular") Popular
-    nav
-      a(href="/") Search
   
     h3 Links to URL:
-    h3 a(href=page.url)= #{page.url} (#{page.incomingLinks.length}):
+    h3 
+      a(href=page.url)= `${page.url} (${page.incomingLinks.length})`
 
     ul
       each link in page.incomingLinks
