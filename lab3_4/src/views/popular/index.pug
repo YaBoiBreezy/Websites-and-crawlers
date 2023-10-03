@@ -1,0 +1,20 @@
+doctype html
+
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width")
+
+    title Popular
+
+  body
+    nav
+      a(href="/") Search
+  h1 Top 10 Pages by Incoming Links:
+  ol
+    each page in topPages
+      li
+        a(href=`/popular/${page.id}`)= page.url 
+        | (#{page.incomingLinks.length})
+
+      

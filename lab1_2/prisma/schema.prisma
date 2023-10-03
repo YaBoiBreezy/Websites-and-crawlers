@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("SQLITE_DB_URL")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement()) @map("customer_id")
+  username  String   @unique @map("username")
+  name      String   @map("name")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  orders    Order[]
+}
+
+model Product {
+  id         Int         @id @default(autoincrement()) @map("product_id")
+  name       String      @map("name")
+  price      Int         @map("price")
+  stock      Int         @map("stock")
+  dimensionX Float       @map("dimension_x")
+  dimensionY Float       @map("dimension_y")
+  dimensionZ Float       @map("dimension_z")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  reviews    Review[]
+  orderItems OrderItem[]
+}
+
+model Review {
+  id        Int      @id @default(autoincrement()) @map("review_id")
+  productId Int      @map("product_id")
+  rating    Int      @map("rating")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id         Int         @id @default(autoincrement()) @map("order_id")
+  customerId Int         @map("customer_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+  customer   Customer    @relation(fields: [customerId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement()) @map("item_id")
+  orderId   Int      @map("order_id")
+  productId Int      @map("product_id")
+  quantity  Int      @map("quantity")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  order     Order    @relation(fields: [orderId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
