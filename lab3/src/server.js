@@ -25,9 +25,30 @@ app.use(express.json());
 console.log(`There are ${await db.page.count()} pages in the db`);
 
 // handler for root
-app.get("/", (req, res) => {
-  return res.redirect("/popular");
-});
+app.get(
+  "/",
+  // middleware.validate(schema.ListProductsRequest),    <======TODO
+  async (req, res, next) => {
+    try {
+      let input = {
+        query: req.query.name ? req.query.name.trim() : "",
+      };
+
+      let topPages = 0; //do db search here
+
+      return res.status(200).format({
+        "application/json": () => {
+          res.json(topPages);
+        },
+        "text/html": () => {
+          res.render("index", { topPages });
+        },
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
 
 // handler for listing top 10 pages by incoming links
 app.get("/popular", async (req, res, next) => {
