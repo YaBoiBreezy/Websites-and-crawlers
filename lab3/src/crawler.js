@@ -41,6 +41,7 @@ function createCrawler(db, batchSize) {
       await db.crawl.create({
         data: {
           pageId: res.options.pageId,
+          title: res.$("title").text(),
           content: res.body,
         },
       });

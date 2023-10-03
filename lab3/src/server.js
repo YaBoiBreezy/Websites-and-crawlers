@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import * as middleware from "./middleware.js";
 import * as schema from "./schema.js";
 import * as errors from "./errors.js";
+import elasticlunr from "elasticlunr";
 
 // database
 let db = new PrismaClient();
@@ -24,6 +25,43 @@ app.use(express.json());
 
 console.log(`There are ${await db.page.count()} pages in the db`);
 
+function makeIndex() {
+  var index = elasticlunr(function () {
+    this.addField("title");
+    this.addField("body");
+    this.setRef("id");
+  });
+
+  return db.page
+    .findMany({
+      include: {
+        crawls: true,
+      },
+    })
+    .then((pages) => {
+      const promises = pages.map(async (page) => {
+        if (page.crawls.length > 0) {
+          await index.addDoc({
+            id: page.id,
+            title: page.crawls[page.crawls.length - 1].title,
+            body: page.crawls[page.crawls.length - 1].contents,
+          });
+        }
+      });
+
+      return Promise.all(promises).then(() => index);
+    });
+}
+
+let index;
+makeIndex()
+  .then((i) => {
+    index = i;
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
 // handler for root
 app.get(
   "/",
@@ -33,8 +71,27 @@ app.get(
       let input = {
         query: req.query.name ? req.query.name.trim() : "",
       };
+      console.log(input.query);
 
-      let topPages = 0; //do db search here
+      let rankedPages = index.search(input.query, {
+        fields: {
+          title: { boost: 1 },
+          body: { boost: 3 },
+        },
+      });
+      console.log(rankedPages);
+      const topPages = [];
+      //get only the top 10 pages
+      rankedPages.slice(0, 10).forEach(async (page) => {
+        const pageId = page.ref;
+        const score = page.score;
+        const title = page.title;
+        const dbPage = await db.page.findUnique({
+          where: { id: pageId },
+        });
+        const url = dbPage.url;
+        topPages.push({ url, title, score });
+      });
 
       return res.status(200).format({
         "application/json": () => {

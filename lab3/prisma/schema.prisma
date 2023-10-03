@@ -27,6 +27,7 @@ model Link {
 model Crawl {
     id          Int      @id @default(autoincrement()) @map("crawlId")
     pageId      Int
+    title       String?
     content     String?
     completedAt DateTime @default(now())
     page        Page     @relation(fields: [pageId], references: [id])
