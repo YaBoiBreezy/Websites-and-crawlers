@@ -45,9 +45,9 @@ export let ViewPageRequest = z.object({
   body: EmptyObject,
 });
 
-export let ListProductsRequest = z.object({
+export let ListPagesRequest = z.object({
   params: EmptyObject,
-  query: z.object({ name: NameQuery, inStock: InStockQuery }).strict(),
+  query: z.object({ name: NameQuery }).strict(),
   body: EmptyObject,
 });
 

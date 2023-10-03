@@ -27,7 +27,7 @@ console.log(`There are ${await db.page.count()} pages in the db`);
 // handler for root
 app.get(
   "/",
-  // middleware.validate(schema.ListProductsRequest),    <======TODO
+  middleware.validate(schema.ListPagesRequest),
   async (req, res, next) => {
     try {
       let input = {
