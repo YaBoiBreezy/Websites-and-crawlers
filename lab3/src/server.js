@@ -44,7 +44,7 @@ function makeIndex() {
           await index.addDoc({
             id: page.id,
             title: page.crawls[page.crawls.length - 1].title,
-            body: page.crawls[page.crawls.length - 1].contents,
+            body: page.crawls[page.crawls.length - 1].content,
           });
         }
       });
@@ -57,6 +57,8 @@ let index;
 makeIndex()
   .then((i) => {
     index = i;
+    //console.log(index.documentStore); //long, all docs in index
+    console.log("index made");
   })
   .catch((error) => {
     console.error(error);
@@ -75,31 +77,36 @@ app.get(
 
       let rankedPages = index.search(input.query, {
         fields: {
-          title: { boost: 1 },
-          body: { boost: 3 },
+          title: {},
+          body: {},
         },
-      });
-      console.log(rankedPages);
-      const topPages = [];
-      //get only the top 10 pages
-      rankedPages.slice(0, 10).forEach(async (page) => {
-        const pageId = page.ref;
-        const score = page.score;
-        const title = page.title;
-        const dbPage = await db.page.findUnique({
-          where: { id: pageId },
-        });
-        const url = dbPage.url;
-        topPages.push({ url, title, score });
       });
 
-      return res.status(200).format({
-        "application/json": () => {
-          res.json(topPages);
-        },
-        "text/html": () => {
-          res.render("index", { topPages });
-        },
+      const topPages = [];
+      //gets top 10 pages
+      const promises = rankedPages.slice(0, 10).map(async (page) => {
+        const id = page.ref;
+        const score = parseFloat(page.score) * 10; //make score 0-10 to look nicer
+        const dbPage = await db.page.findUnique({
+          where: { id: parseInt(id) },
+          include: { crawls: true },
+        });
+        const title = dbPage.crawls[dbPage.crawls.length - 1].title;
+        const url = dbPage.url;
+        topPages.push({ id, url, title, score });
+      });
+
+      Promise.all(promises).then(() => {
+        console.log(topPages);
+
+        res.status(200).format({
+          "application/json": () => {
+            res.json(topPages);
+          },
+          "text/html": () => {
+            res.render("index", { topPages });
+          },
+        });
       });
     } catch (error) {
       return next(error);

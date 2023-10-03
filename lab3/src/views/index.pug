@@ -23,15 +23,13 @@ html(lang="en")
     article
       h2 Results
       if topPages.length > 0
-        ul
         each page in topPages
-          li
-            a(href=`/popular/${page.id}`)= page.url 
-            | (#{page.searchScore.length})
           article
             h2
               a(href=`/popular/${page.id}`)= page.title 
-            h3 a(href=page.url)= #{page.url}
+            h3 
+              a(href=`${page.url}`)= page.url
             p Score: #{page.score}
+            br
       else 
         p No pages found.
