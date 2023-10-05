@@ -24,6 +24,7 @@
     "@prisma/client": "5.3.1",
     "cheerio": "1.0.0-rc.12",
     "crawler": "1.4.0",
+    "elasticlunr": "0.9.5",
     "express": "4.18.2",
     "pug": "3.0.2",
     "zod": "3.22.2",
