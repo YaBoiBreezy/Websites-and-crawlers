@@ -50,19 +50,20 @@ try {
     }
     let diff = 0;
     for (let i = 0; i < size; i++) {
-      diff += Math.abs(newRanks[i] - ranks[i]);
+      diff += Math.pow(newRanks[i] - ranks[i], 2); //euclidean distance
     }
+    diff = Math.sqrt(diff);
+    ranks = newRanks;
     if (diff < delta) {
       break;
     }
-    ranks = newRanks;
   }
 
   let results = new Array(size);
   for (let i = 0; i < size; i++) {
     results[i] = {
       url: pages[i].url,
-      rank: Number(ranks[i].toFixed(5)),
+      rank: Number(ranks[i].toFixed(11)),
     };
   }
   results.sort((a, b) => b.rank - a.rank);
