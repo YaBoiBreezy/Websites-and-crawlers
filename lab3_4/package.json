@@ -14,6 +14,7 @@
     "start": "node ./src/server.js",
     "watch": "node --watch ./src/server.js",
     "crawl": "node ./src/crawler.js",
+    "rank": "node ./src/rank.js",
     "db:push": "prisma db push --accept-data-loss",
     "db:reset": "prisma migrate reset --force"
   },
