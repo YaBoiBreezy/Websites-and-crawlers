@@ -7,17 +7,25 @@ let crawler0 = createCrawler(db, batchSize, 0);
 let crawler1 = createCrawler(db, batchSize, 1);
 let seedUrl0 =
   "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
-let seedUrl1 = "https://www.webscraper.io/test-sites";
+let seedUrl1 = "https://books.toscrape.com/index.html";
 
 try {
-  await db.page.create({ data: { url: seedUrl0, web: 0 } });
+  // await db.page.create({ data: { url: seedUrl0, web: 0 } });
+  // await crawlBatch(db, crawler0, batchSize, seedUrl0);
+
   await db.page.create({ data: { url: seedUrl1, web: 1 } });
-  await crawlBatch(db, crawler0, batchSize, seedUrl0);
   await crawlBatch(db, crawler1, batchSize, seedUrl1);
 } catch (error) {
   console.log(error);
 } finally {
   await db.$disconnect();
+}
+
+
+
+function batchCrawler( seed, web){
+
+
 }
 
 function createCrawler(db, batchSize, webIndex) {
@@ -53,6 +61,9 @@ function createCrawler(db, batchSize, webIndex) {
       for (let link of links) {
         let targetPage;
 
+        if (link.includes(".zip") || link.startsWith('mailto:')) {
+          continue;
+        }
         try {
           targetPage = await db.page.create({
             data: { url: link, web: webIndex },
