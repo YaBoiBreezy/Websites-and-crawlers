@@ -74,6 +74,7 @@ app.get(
       let input = {
         query: req.query.name ? req.query.name.trim() : "", 
         limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
+        boost: req.query.boost ? req.query.boost.trim() : "false", 
       };
       console.log(input.query+" "+input.limit);
 

@@ -17,6 +17,7 @@ let Rating = z.coerce.number().int().min(0).max(10);
 let NameQuery = z.string().trim().optional();
 
 let limit= z.string().trim().optional();
+let boost= z.string().trim().optional();
 
 let InStockQuery = z.literal("on").optional();
 
@@ -49,7 +50,7 @@ export let ViewPageRequest = z.object({
 
 export let ListPagesRequest = z.object({
   params: EmptyObject,
-  query: z.object({ name: NameQuery, limit: limit }).strict(),
+  query: z.object({ name: NameQuery, limit: limit, boost:boost }).strict(),
   body: EmptyObject,
 });
 
