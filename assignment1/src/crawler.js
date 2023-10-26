@@ -10,23 +10,17 @@ let seedUrl0 =
 let seedUrl1 = "https://books.toscrape.com/index.html";
 
 try {
-  // await db.page.create({ data: { url: seedUrl0, web: 0 } });
-  // await crawlBatch(db, crawler0, batchSize, seedUrl0);
+  await db.page.create({ data: { url: seedUrl0, web: 0 } });
+  await crawlBatch(db, crawler0, batchSize, seedUrl0);
 
-  await db.page.create({ data: { url: seedUrl1, web: 1 } });
-  await crawlBatch(db, crawler1, batchSize, seedUrl1);
+  // await db.page.create({ data: { url: seedUrl1, web: 1 } });
+  // await crawlBatch(db, crawler1, batchSize, seedUrl1);
 } catch (error) {
   console.log(error);
 } finally {
   await db.$disconnect();
 }
 
-
-
-function batchCrawler( seed, web){
-
-
-}
 
 function createCrawler(db, batchSize, webIndex) {
   let crawler = new Crawler({

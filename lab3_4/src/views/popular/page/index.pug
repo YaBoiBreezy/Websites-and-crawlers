@@ -16,8 +16,14 @@ html(lang="en")
     h3 Links to URL:
     h3 
       a(href=page.url)= `${page.url} (${page.incomingLinks.length})`
-
+    label(for="incomingpages", style="margin-right: 0.2em") Incoming Pages
     ul
       each link in page.incomingLinks
+        li
+          a(href=link.source.url)= link.source.url
+    
+    label(for="outgoinggpages", style="margin-right: 0.2em") Outgoing Pages
+    ul
+      each link in page.outgoingLinks
         li
           a(href=link.source.url)= link.source.url

@@ -4,8 +4,9 @@ import { PrismaClient } from "@prisma/client";
 let db = new PrismaClient();
 let batchSize = 5;
 let crawler = createCrawler(db, batchSize);
-let seedUrl =
-  "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
+// let seedUrl =
+//   "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
+let seedUrl= "https://books.toscrape.com/index.html";
 
 try {
   await db.page.create({ data: { url: seedUrl } });

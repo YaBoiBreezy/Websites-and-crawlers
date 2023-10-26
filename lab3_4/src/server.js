@@ -25,6 +25,7 @@ app.use(express.json());
 
 console.log(`There are ${await db.page.count()} pages in the db`);
 
+
 function makeIndex() {
   var index = elasticlunr(function () {
     this.addField("title");
@@ -71,9 +72,10 @@ app.get(
   async (req, res, next) => {
     try {
       let input = {
-        query: req.query.name ? req.query.name.trim() : "",
+        query: req.query.name ? req.query.name.trim() : "", 
+        limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
       };
-      console.log(input.query);
+      console.log(input.query+" "+input.limit);
 
       let rankedPages = index.search(input.query, {
         fields: {
@@ -160,6 +162,11 @@ app.get(
         where: { id: input.pageId },
         include: {
           incomingLinks: {
+            include: {
+              source: true,
+            },            
+          },
+          outgoingLinks: {
             include: {
               source: true,
             },
