@@ -1,4 +1,4 @@
-import Crawler from "crawler";
+/*import Crawler from "crawler";
 import { PrismaClient } from "@prisma/client";
 
 let db = new PrismaClient();
@@ -19,8 +19,36 @@ try {
   console.log(error);
 } finally {
   await db.$disconnect();
-}
+}*/
+import Crawler from "crawler";
+import { PrismaClient } from "@prisma/client";
 
+let db = new PrismaClient();
+let batchSize = 5;
+let crawler0 = createCrawler(db, batchSize, 0);
+let crawler1 = createCrawler(db, batchSize, 1);
+let seedUrl0 =
+  "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
+let seedUrl1 = "https://books.toscrape.com/index.html";
+let firstCrawlComplete = false;
+
+try {
+  crawler0.on("drain", async () => {
+    setTimeout(async () => {
+      if (firstCrawlComplete) {
+        await db.page.create({ data: { url: seedUrl1, web: 1 } });
+        await crawlBatch(db, crawler1, batchSize, seedUrl1);
+      }
+    }, 100); //delay before checking the flag so drain can do its thing
+  });
+
+  await db.page.create({ data: { url: seedUrl0, web: 0 } });
+  await crawlBatch(db, crawler0, batchSize, seedUrl0);
+} catch (error) {
+  console.log(error);
+} finally {
+  await db.$disconnect();
+}
 
 function createCrawler(db, batchSize, webIndex) {
   let crawler = new Crawler({
@@ -55,7 +83,7 @@ function createCrawler(db, batchSize, webIndex) {
       for (let link of links) {
         let targetPage;
 
-        if (link.includes(".zip") || link.startsWith('mailto:')) {
+        if (link.includes(".zip") || link.startsWith("mailto:")) {
           continue;
         }
         try {
@@ -101,8 +129,13 @@ function createCrawler(db, batchSize, webIndex) {
     if (remaining > 0) {
       crawlBatch(db, crawler, crawler.options.maxConnections);
     } else {
-      console.log("Done.");
-      await db.$disconnect();
+      console.log("Done a crawl");
+      if (!firstCrawlComplete) {
+        firstCrawlComplete = true;
+        console.log("first crawl is complete");
+      } else {
+        await db.$disconnect();
+      }
     }
   });
 
