@@ -81,7 +81,7 @@ app.get(
       };
 
       if (input.limit < 1 || input.limit > 50) {
-        return next(new errors.BusinessRuleViolationError("invalid limit"));
+        input.limit = 10;
       }
 
       console.log(input.query + " " + input.limit);
@@ -156,7 +156,7 @@ app.get(
       };
 
       if (input.limit < 1 || input.limit > 50) {
-        return next(new errors.BusinessRuleViolationError("invalid limit"));
+        input.limit = 10;
       }
 
       console.log(input.query + " " + input.limit);
@@ -235,7 +235,7 @@ app.get(
           },
           outgoingLinks: {
             include: {
-              source: true,
+              target: true,
             },
           },
         },
@@ -245,11 +245,10 @@ app.get(
         return next(new errors.ResourceNotFoundError("Page not found."));
       }
 
-      console.log(page);
-      console.log(page.crawls.length);
-      console.log(page.crawls[page.crawls.length - 1]);
-      console.log(page.crawls[page.crawls.length - 1].content);
-      let content = page.crawls[page.crawls.length - 1].content;
+      let crawl = await db.crawl.findMany({
+        where: { pageId: input.pageId },
+      });
+      let content = crawl[0].content;
       const wordFreq = {};
       const words = content.toLowerCase().split(/\W+/);
       for (const word of words) {
@@ -267,6 +266,8 @@ app.get(
       }));
       wordFreqArray.sort((a, b) => b.freq - a.freq);
       page.wordFreq = wordFreqArray;
+      page.title = crawl[0].title;
+      console.log(page);
 
       return res.status(200).format({
         "application/json": () => {

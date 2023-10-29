@@ -24,7 +24,7 @@ html(lang="en")
         ul
         each incoming in page.incomingLinks
           li
-            a(href=`/${endpoint}/${incoming.id}`)= incoming.url
+            a(href=`${incoming.source.url}`)= incoming.source.url
       else 
         p No incoming found.
 
@@ -34,17 +34,15 @@ html(lang="en")
         ul
         each outgoing in page.outgoingLinks
           li
-            a(href=`/${endpoint}/${outgoing.id}`)= outgoing.url
+            a(href=`${outgoing.target.url}`)= outgoing.target.url
       else 
         p No outgoing found.
 
     article
       h2 Word frequency 
-      if pages.wordFreq.length > 0
+      if page.wordFreq.length > 0
         ul
         each wordFreq in page.wordFreq
-          li
-            p
-              #{wordFreq.word} occurred #{wordFreq.freq} times
+          li "#{wordFreq.word}" occurred #{wordFreq.freq} times
       else 
         p No words found.

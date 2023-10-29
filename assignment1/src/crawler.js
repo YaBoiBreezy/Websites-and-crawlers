@@ -12,26 +12,6 @@ let seedUrl1 = "https://books.toscrape.com/index.html";
 let crawlsComplete = 0;
 
 try {
-  let pagerank0 = await computePageRank(0);
-  let pagerank1 = await computePageRank(1);
-  let pageranks = pagerank0.concat(pagerank1);
-  for (const { id, rank } of pageranks) {
-    try {
-      await db.page.update({
-        where: { id: id },
-        data: {
-          rank: rank,
-        },
-      });
-    } catch (error) {
-      console.error(`Error updating page ID ${id}:`, error);
-    }
-  }
-} catch (error) {
-  console.error("Error getting pageranks:", error);
-}
-
-try {
   crawler0.on("drain", async () => {
     setTimeout(async () => {
       if (crawlsComplete > 0) {
@@ -97,7 +77,7 @@ function createCrawler(db, batchSize, webIndex) {
         links.add(targetUrl);
       });
 
-      await db.crawl.create({
+      let crawl = await db.crawl.create({
         data: {
           pageId: res.options.pageId,
           title: res.$("title").text(),
@@ -122,7 +102,6 @@ function createCrawler(db, batchSize, webIndex) {
             });
           }
         }
-
         let existingLink = await db.link.findFirst({
           where: {
             sourceId: res.options.pageId,
