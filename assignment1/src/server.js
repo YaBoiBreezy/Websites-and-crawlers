@@ -4,6 +4,16 @@ import * as middleware from "./middleware.js";
 import * as schema from "./schema.js";
 import * as errors from "./errors.js";
 import elasticlunr from "elasticlunr";
+import computePageRank from "./rank.js";
+
+let pagerank0 = computePageRank(0);
+pagerank0.then((results) => {
+  console.log("Computed pagerank of web 0, " + results.length + " values");
+});
+let pagerank1 = computePageRank(1);
+pagerank1.then((results) => {
+  console.log("Computed pagerank of web 1, " + results.length + " values");
+});
 
 // database
 let db = new PrismaClient();
@@ -24,7 +34,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 console.log(`There are ${await db.page.count()} pages in the db`);
-
 
 function makeIndex() {
   var index = elasticlunr(function () {
@@ -72,11 +81,11 @@ app.get(
   async (req, res, next) => {
     try {
       let input = {
-        query: req.query.name ? req.query.name.trim() : "", 
+        query: req.query.name ? req.query.name.trim() : "",
         limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
-        boost: req.query.boost ? req.query.boost.trim() : "false", 
+        boost: req.query.boost ? req.query.boost.trim() : "false",
       };
-      console.log(input.query+" "+input.limit);
+      console.log(input.query + " " + input.limit);
 
       let rankedPages = index.search(input.query, {
         fields: {
@@ -165,7 +174,7 @@ app.get(
           incomingLinks: {
             include: {
               source: true,
-            },            
+            },
           },
           outgoingLinks: {
             include: {
