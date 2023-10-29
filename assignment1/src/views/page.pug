@@ -20,9 +20,9 @@ html(lang="en")
     
     article
       h2 Incoming
-      if pages.incoming.length > 0
+      if page.incomingLinks.length > 0
         ul
-        each incoming in page.incoming
+        each incoming in page.incomingLinks
           li
             a(href=`/${endpoint}/${incoming.id}`)= incoming.url
       else 
@@ -30,16 +30,16 @@ html(lang="en")
 
     article
       h2 Outgoing
-      if pages.outgoing.length > 0
+      if page.outgoingLinks.length > 0
         ul
-        each outgoing in page.outgoing
+        each outgoing in page.outgoingLinks
           li
             a(href=`/${endpoint}/${outgoing.id}`)= outgoing.url
       else 
         p No outgoing found.
 
     article
-      h2 Word frequency
+      h2 Word frequency 
       if pages.wordFreq.length > 0
         ul
         each wordFreq in page.wordFreq

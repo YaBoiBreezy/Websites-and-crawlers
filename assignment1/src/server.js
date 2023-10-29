@@ -92,35 +92,42 @@ app.get(
           body: {},
         },
       });
-      console.log(rankedPages);
-      if (input.boost) {
+
+      if (input.boost == "on") {
+        console.log("boosting");
         for (let i = 0; i < rankedPages.length; i++) {
           let page = rankedPages[i];
-          let rank = pagerank0.find((pr) => pr.id.toString() === page.ref);
-          if (rank) {
-            page.score *= rank.rank;
+          let dbPage = await db.page.findUnique({
+            where: { id: parseInt(page.ref) },
+            select: {
+              rank: true,
+            },
+          });
+          if (dbPage) {
+            rankedPages[i].score *= dbPage.rank;
+          } else {
+            console.log("page not found");
           }
         }
       }
-      console.log(rankedPages);
 
       const topPages = [];
       //gets top 10 pages
       const promises = rankedPages.slice(0, input.limit).map(async (page) => {
         const id = page.ref;
-        const score = parseFloat(page.score) * 10; //make score 0-10 to look nicer
+        const score = parseFloat(page.score);
         const dbPage = await db.page.findUnique({
           where: { id: parseInt(id) },
           include: { crawls: true },
         });
         const title = dbPage.crawls[dbPage.crawls.length - 1].title;
         const url = dbPage.url;
-        topPages.push({ id, url, title, score });
+        const name = "Alexander Breeze, Mohajer Farhadpur, Benjamin Cyiza";
+        const pr = dbPage.rank;
+        topPages.push({ id, url, title, score, name, pr });
       });
 
       Promise.all(promises).then(() => {
-        console.log(topPages);
-
         res.status(200).format({
           "application/json": () => {
             res.json(topPages);
@@ -160,17 +167,21 @@ app.get(
           body: {},
         },
       });
-      console.log(rankedPages);
-      if (input.boost) {
+
+      if (input.boost == "on") {
         for (let i = 0; i < rankedPages.length; i++) {
           let page = rankedPages[i];
-          let rank = pagerank1.find((pr) => pr.id.toString() === page.ref);
-          if (rank) {
-            page.score *= rank.rank;
+          let dbPage = await db.page.findUnique({
+            where: { id: parseInt(page.ref) },
+            select: {
+              rank: true,
+            },
+          });
+          if (dbPage) {
+            page.score *= dbPage.rank;
           }
         }
       }
-      console.log(rankedPages);
 
       const topPages = [];
       //gets top 10 pages
@@ -183,12 +194,12 @@ app.get(
         });
         const title = dbPage.crawls[dbPage.crawls.length - 1].title;
         const url = dbPage.url;
-        topPages.push({ id, url, title, score });
+        const name = "Alexander Breeze, Mohajer Farhadpur, Benjamin Cyiza";
+        const pr = dbPage.rank;
+        topPages.push({ id, url, title, score, name, pr });
       });
 
       Promise.all(promises).then(() => {
-        console.log(topPages);
-
         res.status(200).format({
           "application/json": () => {
             res.json(topPages);
@@ -234,12 +245,35 @@ app.get(
         return next(new errors.ResourceNotFoundError("Page not found."));
       }
 
+      console.log(page);
+      console.log(page.crawls.length);
+      console.log(page.crawls[page.crawls.length - 1]);
+      console.log(page.crawls[page.crawls.length - 1].content);
+      let content = page.crawls[page.crawls.length - 1].content;
+      const wordFreq = {};
+      const words = content.toLowerCase().split(/\W+/);
+      for (const word of words) {
+        if (word) {
+          if (wordFreq[word]) {
+            wordFreq[word]++;
+          } else {
+            wordFreq[word] = 1;
+          }
+        }
+      }
+      const wordFreqArray = Object.entries(wordFreq).map(([word, freq]) => ({
+        word,
+        freq,
+      }));
+      wordFreqArray.sort((a, b) => b.freq - a.freq);
+      page.wordFreq = wordFreqArray;
+
       return res.status(200).format({
         "application/json": () => {
           res.json(page);
         },
         "text/html": () => {
-          res.render("popular/page/index", { page });
+          res.render("page", { page });
         },
       });
     } catch (error) {

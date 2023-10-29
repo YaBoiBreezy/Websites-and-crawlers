@@ -36,11 +36,10 @@ html(lang="en")
         each page in topPages
           article
             h2
-              a(href=`/${page.id}`)= page.title
+              a(href=`/page/${page.id}`)= page.title
             p 
               a(href=`${page.url}`)= page.url
-            p 
-              Score: #{page.searchScore}
-              PageRank: #{page.pageRank}
+            p Score: #{page.score}
+            p PageRank: #{page.pr}
       else 
         p No pages found.

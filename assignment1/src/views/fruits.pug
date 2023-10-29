@@ -39,8 +39,7 @@ html(lang="en")
               a(href=`/page/${page.id}`)= page.title
             p 
               a(href=`${page.url}`)= page.url
-            p 
-              Score: #{page.searchScore}
-              PageRank: #{page.pageRank}
+            p Score: #{page.score}
+            p PageRank: #{page.pr}
       else 
         p No pages found.
