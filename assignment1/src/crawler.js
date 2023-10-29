@@ -1,27 +1,6 @@
-/*import Crawler from "crawler";
-import { PrismaClient } from "@prisma/client";
-
-let db = new PrismaClient();
-let batchSize = 5;
-let crawler0 = createCrawler(db, batchSize, 0);
-let crawler1 = createCrawler(db, batchSize, 1);
-let seedUrl0 =
-  "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
-let seedUrl1 = "https://books.toscrape.com/index.html";
-
-try {
-  // await db.page.create({ data: { url: seedUrl0, web: 0 } });
-  // await crawlBatch(db, crawler0, batchSize, seedUrl0);
-
-  await db.page.create({ data: { url: seedUrl1, web: 1 } });
-  await crawlBatch(db, crawler1, batchSize, seedUrl1);
-} catch (error) {
-  console.log(error);
-} finally {
-  await db.$disconnect();
-}*/
 import Crawler from "crawler";
 import { PrismaClient } from "@prisma/client";
+import computePageRank from "./rank.js";
 
 let db = new PrismaClient();
 let batchSize = 5;
@@ -30,19 +9,65 @@ let crawler1 = createCrawler(db, batchSize, 1);
 let seedUrl0 =
   "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html";
 let seedUrl1 = "https://books.toscrape.com/index.html";
-let firstCrawlComplete = false;
+let crawlsComplete = 0;
+
+try {
+  let pagerank0 = await computePageRank(0);
+  let pagerank1 = await computePageRank(1);
+  let pageranks = pagerank0.concat(pagerank1);
+  for (const { id, rank } of pageranks) {
+    try {
+      await db.page.update({
+        where: { id: id },
+        data: {
+          rank: rank,
+        },
+      });
+    } catch (error) {
+      console.error(`Error updating page ID ${id}:`, error);
+    }
+  }
+} catch (error) {
+  console.error("Error getting pageranks:", error);
+}
 
 try {
   crawler0.on("drain", async () => {
     setTimeout(async () => {
-      if (firstCrawlComplete) {
-        await db.page.create({ data: { url: seedUrl1, web: 1 } });
+      if (crawlsComplete > 0) {
+        await db.page.create({ data: { url: seedUrl1, web: 1, rank: 0 } });
         await crawlBatch(db, crawler1, batchSize, seedUrl1);
       }
     }, 100); //delay before checking the flag so drain can do its thing
   });
+  crawler1.on("drain", async () => {
+    setTimeout(async () => {
+      if (crawlsComplete > 1) {
+        console.log("done both crawls, making pageranks now");
+        try {
+          let pagerank0 = await computePageRank(0);
+          let pagerank1 = await computePageRank(1);
+          let pageranks = pagerank0.concat(pagerank1);
+          for (const { id, rank } of pageranks) {
+            try {
+              await db.page.update({
+                where: { id: id },
+                data: {
+                  rank: rank,
+                },
+              });
+            } catch (error) {
+              console.error(`Error updating page ID ${id}:`, error);
+            }
+          }
+        } catch (error) {
+          console.error("Error getting pageranks:", error);
+        }
+      }
+    }, 100); //delay before checking the flag so drain can do its thing
+  });
 
-  await db.page.create({ data: { url: seedUrl0, web: 0 } });
+  await db.page.create({ data: { url: seedUrl0, web: 0, rank: 0 } });
   await crawlBatch(db, crawler0, batchSize, seedUrl0);
 } catch (error) {
   console.log(error);
@@ -88,7 +113,7 @@ function createCrawler(db, batchSize, webIndex) {
         }
         try {
           targetPage = await db.page.create({
-            data: { url: link, web: webIndex },
+            data: { url: link, web: webIndex, rank: 0 },
           });
         } catch (error) {
           if (error.code === "P2002") {
@@ -130,12 +155,7 @@ function createCrawler(db, batchSize, webIndex) {
       crawlBatch(db, crawler, crawler.options.maxConnections);
     } else {
       console.log("Done a crawl");
-      if (!firstCrawlComplete) {
-        firstCrawlComplete = true;
-        console.log("first crawl is complete");
-      } else {
-        await db.$disconnect();
-      }
+      crawlsComplete += 1;
     }
   });
 

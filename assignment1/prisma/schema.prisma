@@ -11,6 +11,7 @@ model Page {
     id            Int     @id @default(autoincrement()) @map("pageId")
     url           String  @unique
     web           Int
+    rank          Float
     incomingLinks Link[]  @relation("TargetPageLink")
     outgoingLinks Link[]  @relation("SourcePageLink")
     crawls        Crawl[]

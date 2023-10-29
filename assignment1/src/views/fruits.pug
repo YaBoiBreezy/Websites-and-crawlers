@@ -17,10 +17,10 @@ html(lang="en")
       h1 #{endpoint}
 
       h2 Search
-      form(method="get" action="/products")
+      form(method="get" action="/fruits")
         p
-          label(for="search.q", style="margin-right: 0.2em") Query
-          input(type="text", id="search.q", name="q")
+          label(for="search.name", style="margin-right: 0.2em") Query
+          input(type="text", id="search.name", name="name")
         p
           label(for="search.boost") Boost
           input(type="checkbox", id="search.boost" name="boost")
@@ -32,11 +32,11 @@ html(lang="en")
 
     article
       h2 List
-      if pages.length > 0
-        each page in pages
+      if topPages.length > 0
+        each page in topPages
           article
             h2
-              a(href=`/${endpoint}/${page.id}`)= page.title
+              a(href=`/page/${page.id}`)= page.title
             p 
               a(href=`${page.url}`)= page.url
             p 

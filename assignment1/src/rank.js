@@ -73,7 +73,7 @@ export default async function computePageRank(webIndex) {
     let results = new Array(size);
     for (let i = 0; i < size; i++) {
       results[i] = {
-        url: pages[i].url,
+        id: pages[i].id,
         rank: Number(ranks[i].toFixed(11)),
       };
     }
