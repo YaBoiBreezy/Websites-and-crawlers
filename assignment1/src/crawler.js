@@ -11,6 +11,9 @@ let seedUrl0 =
 let seedUrl1 = "https://books.toscrape.com/index.html";
 let crawlsComplete = 0;
 
+//await db.page.create({ data: { url: seedUrl1, web: 1, rank: 0 } });
+//await crawlBatch(db, crawler1, batchSize, seedUrl1);
+
 try {
   crawler0.on("drain", async () => {
     setTimeout(async () => {
@@ -76,14 +79,15 @@ function createCrawler(db, batchSize, webIndex) {
 
         links.add(targetUrl);
       });
-
-      let crawl = await db.crawl.create({
-        data: {
-          pageId: res.options.pageId,
-          title: res.$("title").text(),
-          content: res.body,
-        },
-      });
+      try {
+        let crawl = await db.crawl.create({
+          data: {
+            pageId: res.options.pageId,
+            title: res.$("title").text(),
+            content: res.body,
+          },
+        });
+      } catch (error) {}
 
       for (let link of links) {
         let targetPage;
@@ -110,12 +114,14 @@ function createCrawler(db, batchSize, webIndex) {
         });
 
         if (!existingLink) {
-          await db.link.create({
-            data: {
-              sourceId: res.options.pageId,
-              targetId: targetPage.id,
-            },
-          });
+          try {
+            await db.link.create({
+              data: {
+                sourceId: res.options.pageId,
+                targetId: targetPage.id,
+              },
+            });
+          } catch (error) {}
         }
       }
 
