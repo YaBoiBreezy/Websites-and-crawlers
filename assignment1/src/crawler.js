@@ -18,7 +18,7 @@ try {
   crawler0.on("drain", async () => {
     setTimeout(async () => {
       if (crawlsComplete > 0) {
-        await db.page.create({ data: { url: seedUrl1, web: 1, rank: 0 } });
+        try{await db.page.create({ data: { url: seedUrl1, web: 1, rank: 0 } });}catch(error){}
         await crawlBatch(db, crawler1, batchSize, seedUrl1);
       }
     }, 100); //delay before checking the flag so drain can do its thing

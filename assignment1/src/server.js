@@ -71,11 +71,11 @@ Promise.all([makeIndex(0), makeIndex(1)])
 // handler for fruits
 app.get(
   "/fruits",
-  middleware.validate(schema.ListPagesRequest),
+  //middleware.validate(schema.ListPagesRequest),
   async (req, res, next) => {
     try {
       let input = {
-        query: req.query.name ? req.query.name.trim() : "",
+        q: req.query.q ? req.query.q.trim() : "",
         limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
         boost: req.query.boost ? req.query.boost.trim() : "false",
       };
@@ -84,14 +84,24 @@ app.get(
         input.limit = 10;
       }
 
-      console.log(input.query + " " + input.limit);
+      console.log(input.q + " " + input.limit);
 
-      let rankedPages = index0.search(input.query, {
+      let rankedPages = index0.search(input.q, {
         fields: {
           title: {},
           body: {},
         },
       });
+
+      if (rankedPages.length<input.limit){
+        let dbPages = await db.page.findMany({
+          select: {
+            id: true
+          },
+          take: input.limit-rankedPages.length
+      });
+      rankedPages.push(...dbPages.map(page=>({"score": 0, "ref": page.id})));
+    }
 
       if (input.boost == "on") {
         console.log("boosting");
@@ -127,6 +137,8 @@ app.get(
         topPages.push({ id, url, title, score, name, pr });
       });
 
+      console.log(topPages)
+
       Promise.all(promises).then(() => {
         res.status(200).format({
           "application/json": () => {
@@ -146,11 +158,11 @@ app.get(
 // handler for personal
 app.get(
   "/personal",
-  middleware.validate(schema.ListPagesRequest),
+  //middleware.validate(schema.ListPagesRequest),
   async (req, res, next) => {
     try {
       let input = {
-        query: req.query.name ? req.query.name.trim() : "",
+        q: req.query.q ? req.query.q.trim() : "",
         limit: req.query.limit ? parseInt(req.query.limit, 10) : 10,
         boost: req.query.boost ? req.query.boost.trim() : "false",
       };
@@ -159,14 +171,24 @@ app.get(
         input.limit = 10;
       }
 
-      console.log(input.query + " " + input.limit);
+      console.log(input.q + " " + input.limit);
 
-      let rankedPages = index1.search(input.query, {
+      let rankedPages = index1.search(input.q, {
         fields: {
           title: {},
           body: {},
         },
       });
+      
+      if (rankedPages.length<input.limit){
+        let dbPages = await db.page.findMany({
+          select: {
+            id: true
+          },
+          take: input.limit-rankedPages.length
+      });
+      rankedPages.push(...dbPages.map(page=>({"score": 0, "ref": page.id})));
+    }
 
       if (input.boost == "on") {
         for (let i = 0; i < rankedPages.length; i++) {
