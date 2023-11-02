@@ -8,13 +8,10 @@
 
 We completed the whole assignment.
 
-TODO:
-ADD URL's FOR QUERYING TO THIS README FOR TA
-MAKE YT VIDEO EXPLANATION, ADD URL HERE FOR TA
-MAKE CRAWLER DO PAGERANK, STORE IN DB
-VERIFY ALL RESPONSES ARE GOOD
-SETUP ON OPENSTACK BS
-SUBIT CODE
+
+## Links
+Youtube demo: https://www.youtube.com/watch?v=xKL6ZZtXIx8
+URL's for querying: (see requests.http):
 
 ## Instructions
 
