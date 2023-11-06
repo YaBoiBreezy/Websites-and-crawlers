@@ -1,19 +1,61 @@
 from math import sqrt
+from pickle import NONE
 
+#file path
 file_path = "C:\\Users\\cyiza\\Documents\\GitHub\\COMP4601\\lab6\\test.txt"
 
+#number of users and items
+numUsers=0
+numItems=0
+
+#rating matrix
+rating=[]
+
+# current user and item's index to predict
+curUserIndex=-1
+itemToPred=-1
+# similarities of i'th with other users
+curUserSim=[]
+
+#avarega rating of all users
+avgRating=[]
+
+# rate predictiion of a current user on give item
+def pred(userIndex, itemIndex):
+    numerator=0
+    denominator=0
+    for i in range(numUsers):
+        if(i!=userIndex and curUserSim[i]>0):
+            numerator+=curUserSim[i]*(rating[i][itemIndex] - avgRating[i])
+            denominator+=curUserSim[i]
+    prediction=avgRating[userIndex] + (numerator/denominator)
+    rating[userIndex][itemIndex]=prediction
+
+#similarity generator for current user
+def simGenerator(userIndex):
+    for i in range(numUsers):
+        if i == userIndex:
+            curUserSim.append(NONE)
+            continue
+        curUserSim.append(sim(userIndex, i))
+    print(curUserSim)
+    
 #calculating rate average for a user
-def avg(user):
-    print(user)
-    #new array by excluding negative numbers
-    userRating= [num for num in user if int(num) >= 0]
-    average = sum(userRating) / len(userRating) if len(userRating) > 0 else 0
-    return average
+def avgGenerator():
+
+    for r in rating:
+        #new array by excluding negative numbers
+        userRating= [num for num in r if int(num) >= 0]
+        average = sum(userRating) / len(userRating) if len(userRating) > 0 else 0
+        avgRating.append(average)
 
 #calculating similarity
-def sim(userA, userB):
-    avgA=avg(userA)
-    avgB=avg(userB)
+def sim(indexA, indexB):
+    userA=rating[indexA]
+    userB=rating[indexB]
+
+    avgA=avgRating[indexA]
+    avgB=avgRating[indexB]
 
     numerator=0
     denA=0
@@ -26,10 +68,6 @@ def sim(userA, userB):
         denB+=(userB[i] - avgB)**2
     similarity=numerator/(sqrt(denA)*sqrt(denB))
     return similarity
-
-#number of users and items
-numUsers=0
-numItems=0
 
 
 try:
@@ -46,14 +84,23 @@ try:
             users=lines[1].split()
             items=lines[2].split()
 
-            rating=[]
+            
         for line in lines[3:]:
             # Split the line into individual numbers and convert them to integers
             row = [int(num) for num in line.split()]
             
             # Append the row to the two-dimensional array
             rating.append(row)
-        print(sim(rating[0],rating[4]))
+        avgGenerator()
+
+        for i in range(numUsers):
+            for j in range(numItems):
+                if rating[i][j]<0:
+                    curUserIndex=i
+                    itemToPred=j
+                    simGenerator(curUserIndex)
+                    pred(curUserIndex,itemToPred)
+        print(rating)
 
 except FileNotFoundError:
     print(f"The file at '{file_path}' does not exist.")
