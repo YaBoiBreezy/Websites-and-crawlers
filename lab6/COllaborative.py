@@ -14,31 +14,50 @@ rating=[]
 # current user and item's index to predict
 curUserIndex=-1
 itemToPred=-1
+
 # similarities of i'th with other users
-curUserSim=[]
+pcc=[]
 
 #avarega rating of all users
 avgRating=[]
 
-# rate predictiion of a current user on give item
-def pred(userIndex, itemIndex):
+#top k neighbours
+topNei=[]
+
+
+def findTopNeighbours(k=2):
+    # Get indices of the k largest numbers
+    return sorted(range(len(pcc)), key=lambda x: pcc[x], reverse=True)[:k]
+    
+
+
+# rate predictiion of a current user on give item with k neugbours
+def pred(userIndex, itemIndex, k=2):
     numerator=0
     denominator=0
-    for i in range(numUsers):
-        if(i!=userIndex and curUserSim[i]>0):
-            numerator+=curUserSim[i]*(rating[i][itemIndex] - avgRating[i])
-            denominator+=curUserSim[i]
-    prediction=avgRating[userIndex] + (numerator/denominator)
-    rating[userIndex][itemIndex]=prediction
+
+    #findinding top k neighbours
+    topNei=findTopNeighbours(k)
+
+    for i in topNei:
+        #print(pcc[i])
+        
+        if not (pcc[i]<-1 ):
+            numerator+=pcc[i]*(rating[i][itemIndex] - avgRating[i])
+            denominator+=pcc[i]
+        else: 
+            continue
+    prediction=avgRating[userIndex] + round(numerator/denominator, 2)
+    rating[userIndex][itemIndex]=round(prediction,2)
+    
 
 #similarity generator for current user
 def simGenerator(userIndex):
     for i in range(numUsers):
         if i == userIndex:
-            curUserSim.append(NONE)
+            pcc.append(-2)
             continue
-        curUserSim.append(sim(userIndex, i))
-    print(curUserSim)
+        pcc.append(sim(userIndex, i))
     
 #calculating rate average for a user
 def avgGenerator():
@@ -47,7 +66,7 @@ def avgGenerator():
         #new array by excluding negative numbers
         userRating= [num for num in r if int(num) >= 0]
         average = sum(userRating) / len(userRating) if len(userRating) > 0 else 0
-        avgRating.append(average)
+        avgRating.append(round(average, 2))
 
 #calculating similarity
 def sim(indexA, indexB):
@@ -67,7 +86,7 @@ def sim(indexA, indexB):
         denA+=(userA[i]-avgA)**2
         denB+=(userB[i] - avgB)**2
     similarity=numerator/(sqrt(denA)*sqrt(denB))
-    return similarity
+    return round(similarity,2)
 
 
 try:
@@ -91,15 +110,20 @@ try:
             
             # Append the row to the two-dimensional array
             rating.append(row)
-        avgGenerator()
 
         for i in range(numUsers):
             for j in range(numItems):
                 if rating[i][j]<0:
                     curUserIndex=i
                     itemToPred=j
+                    
+                    avgGenerator()
                     simGenerator(curUserIndex)
                     pred(curUserIndex,itemToPred)
+                    pcc=[]
+                    avgRating=[]
+                    topNei=[]
+                    
         print(rating)
 
 except FileNotFoundError:
