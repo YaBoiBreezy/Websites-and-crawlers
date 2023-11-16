@@ -1,12 +1,15 @@
 from functools import cached_property
-from recommenderAltered import UserBasedRecommender
+from userBasedRecommender import UserBasedRecommender
+from itemBasedRecommender import ItemBasedRecommender
 from sklearn.metrics import mean_absolute_error
+import time
 
 import numpy as np
 import pandas as pd
 
 class mae:
     def compute_mae(rec):
+        start_time = time.time()
         total_predictions = 0
         total_under_predictions = 0
         total_over_predictions = 0
@@ -60,13 +63,40 @@ class mae:
         print("Total predictions:", total_predictions)
         print("Total under predictions (<1):", total_under_predictions)
         print("Total over predictions (>5):", total_over_predictions)
+        # print("Number of cases with no valid neighbours:", no_valid_neighbors_count)
+        # print("Average neighbours used:", average_neighbors_used)
         print("MAE =", final_mae)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        return final_mae, elapsed_time
 
 
 if __name__ == "__main__":
+    #test different recommenders, top-K vs threshold, k=2,10,100, threshold=0,0,5,..., using abs similarity?
+    #get MAE, time
     pd.set_option("display.precision", 2)
-    recommender = UserBasedRecommender.read('./parsed-data-trimmed.txt', na=0, k=5)
-    s = recommender.similarities
-    print(recommender.na," ",recommender.k)
-    mae.compute_mae(recommender)
-    
+    userRecommender = UserBasedRecommender()
+    itemRecommender = ItemBasedRecommender()
+    userRecommender.read('./assignment2-data.txt')
+    itemRecommender.read('./assignment2-data.txt')
+    for recommender in [userRecommender, itemRecommender]:
+        start_time_user = time.time()
+        s = recommender.similarities
+        end_time_user = time.time()
+        time_taken_user = end_time_user - start_time_user
+        print(f"Computed similarities of {recommender.name} in {time_taken_user:.2f} seconds")
+
+    for recommender in [userRecommender, itemRecommender]:
+        for abs in [True, False]:
+            for k in [2,10,100]:
+                recommender.abs = abs
+                recommender.k = k
+                recommender.useThreshold = False
+                mae, time = mae.compute_mae(recommender)
+                print(f'{recommender.name} TopK, abs={abs}, k={k}, mae={mae}, time={time}')
+            for t in [0,0.1,0.5,0.9]:
+                recommender.abs = abs
+                recommender.threshold = t
+                recommender.useThreshold = True
+                mae, time = mae.compute_mae(recommender)
+                print(f'{recommender.name} Threshold, abs={abs}, t={t}, mae={mae}, time={time}')
