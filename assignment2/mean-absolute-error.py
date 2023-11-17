@@ -75,7 +75,7 @@ if __name__ == "__main__":
     pd.set_option("display.precision", 2)
     userRecommender = UserBasedRecommender.read('./assignment2-data.txt')
     itemRecommender = ItemBasedRecommender.read('./assignment2-data.txt')
-    #s = userRecommender.similarities
+    s = userRecommender.similarities
     s = itemRecommender.similarities
     print(s)
     print("dome sim")
