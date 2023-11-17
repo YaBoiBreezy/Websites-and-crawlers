@@ -5,17 +5,17 @@ import pandas as pd
 
 
 class UserBasedRecommender:
-    def __init__(self, na=0, name="UserBasedRecommender"):
+    def __init__(self, data: pd.DataFrame, na=0, name="UserBasedRecommender"):
         self.name = name
-        self.data = 0
+        self.data = data
         self.na = na
-        self.k = "null"
-        self.t = "null"
-        self.useThreshold = "null"
-        self.abs = "null"
+        self.k = 0
+        self.t = 0
+        self.useThreshold = False
+        self.abs = False
 
     @classmethod
-    def read(self, file_path: str):
+    def read(cls, file_path: str, na=0, name="UserBasedRecommender"):
         with open(file_path, "r") as file:
             file.readline()
             users = file.readline().split()
@@ -23,7 +23,8 @@ class UserBasedRecommender:
             data = pd.read_csv(file, delim_whitespace=True, header=None, dtype=float)
             data.index = users
             data.columns = items
-        self.data = data
+
+        return cls(data, na, name)
 
     @cached_property
     def similarities(self):
@@ -88,13 +89,13 @@ class UserBasedRecommender:
         if self.useThreshold:
             chosen = user_similarities.loc[valid_similar_users][user_similarities.loc[valid_similar_users] > self.t]
             chosen_ratings = self.data.loc[chosen.index, item]
-            rated_ratings = knn_ratings[chosen_ratings != self.na]
+            rated_ratings = chosen_ratings[chosen_ratings != self.na]
         else:
             chosen = user_similarities.loc[valid_similar_users].nlargest(self.k)
             chosen_ratings = self.data.loc[chosen.index, item]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
 
-        if knn_rated_ratings.empty:
+        if user_rated_ratings.empty:
             return user_mean_rating
 
         rated_similarities = user_similarities[rated_ratings.index]
