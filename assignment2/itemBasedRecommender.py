@@ -102,7 +102,7 @@ class ItemBasedRecommender:
             chosen_ratings = self.data.loc[user, chosen.index]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
         else:
-            chosen = item_similarities.nlargest(self.k)
+            chosen = item_similarities.loc[valid_similar_items].nlargest(self.k)
             chosen_ratings = self.data.loc[user, chosen.index]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
 

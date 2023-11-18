@@ -83,7 +83,8 @@ if __name__ == "__main__":
         print(f"{recommender.name} computed similarities in {end-start} seconds")
 
     for recommender in [itemRecommender, userRecommender]:
-        for abs in [True, False]:
+        for abs in [False, True]:
+            '''
             x=[0,0.2,0.4,0.6,0.8]
             savedMAE=[]
             savedT=[]
@@ -109,6 +110,7 @@ if __name__ == "__main__":
             plt.ylim(0, max(savedT)+10)
             plt.title(f'{recommender.name} with threshold={t}, absoluteValue={abs}')
             plt.savefig(f'graphs/time_{recommender.name}_threshold={t}_absoluteValue={abs}.png')
+            '''
             x=[1,2,5,10,50,100]
             savedMAE=[]
             savedT=[]
