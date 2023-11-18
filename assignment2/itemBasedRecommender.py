@@ -32,40 +32,10 @@ class ItemBasedRecommender:
     def similarities(self):
         try:
             similarities = pd.read_csv('itemSimilarities.csv', index_col=0)
+            similarities.index=self.data.columns
+            similarities.columns=self.data.columns
         except:
             similarities = pd.DataFrame(np.nan, index=self.data.columns, columns=self.data.columns, dtype=float)
-            
-            '''
-            c=0
-            for user in self.data.index:
-                # Get the items reviewed by the user (not NaN)
-                reviewed_items = self.data.columns[self.data.loc[user, :] != self.na]
-
-                # Double loop over reviewed items
-                for itemA in reviewed_items:
-                    for itemB in reviewed_items:
-                        # Check if the similarity is not computed yet
-                        if pd.isna(similarities.at[itemA, itemB]):
-                            c+=1
-                            # Compute the similarity and update the DataFrame
-                            start = time.time()
-                            sim = self.compare(itemA, itemB)
-                            print(sim)
-                            end=time.time()
-                            print((end-start)*265000)
-                            similarities.at[itemA, itemB] = 5#sim
-                            similarities.at[itemB, itemA] = 5#sim
-            print(c/2)
-            similarities = pd.DataFrame(np.nan, index=self.data.columns, columns=self.data.columns, dtype=float)
-            
-            c=0
-            for itemA in self.data.columns:
-                for itemB in self.data.columns:
-                    if pd.isna(similarities.at[itemA, itemB]):
-                        c+=1
-                        similarities.at[itemA, itemB] = similarities.at[itemB, itemA] = 5#self.compare(itemA, itemB)
-            print(c/2)
-            '''
             for itemA in self.data.columns:
                 for itemB in self.data.columns:
                     if pd.isna(similarities.at[itemA, itemB]):
@@ -115,11 +85,6 @@ class ItemBasedRecommender:
 
         user_ratings = self.data.loc[user]
         user_rated_ratings = user_ratings[user_ratings != self.na]
-
-
-        for itemA in user_rated_ratings.index:
-            if pd.isna(self.similarities.at[itemA, item]):
-                self.similarities.at[itemA, item] = self.similarities.at[item, itemA] = self.compare(itemA, item)
 
         item_ratings = self.data[item]
         item_rated_ratings = item_ratings[item_ratings != self.na]

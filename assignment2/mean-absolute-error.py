@@ -2,6 +2,7 @@ from functools import cached_property
 from userBasedRecommender import UserBasedRecommender
 from itemBasedRecommender import ItemBasedRecommender
 from sklearn.metrics import mean_absolute_error
+import matplotlib.pyplot as plt
 import time
 
 import numpy as np
@@ -75,23 +76,61 @@ if __name__ == "__main__":
     pd.set_option("display.precision", 2)
     userRecommender = UserBasedRecommender.read('./assignment2-data.txt')
     itemRecommender = ItemBasedRecommender.read('./assignment2-data.txt')
-    s = userRecommender.similarities
-    s = itemRecommender.similarities
-    print(s)
-    print("dome sim")
+    for recommender in [itemRecommender, userRecommender]:
+        start=time.time()
+        s = recommender.similarities
+        end=time.time()
+        print(f"{recommender.name} computed similarities in {end-start} seconds")
 
-    #for recommender in [userRecommender, itemRecommender]:
     for recommender in [itemRecommender, userRecommender]:
         for abs in [True, False]:
-            for t in [0,0.2,0.5,0.8]:
+            x=[0,0.2,0.4,0.6,0.8]
+            savedMAE=[]
+            savedT=[]
+            for t in x:
                 recommender.abs = abs
                 recommender.t = t
                 recommender.useThreshold = True
                 error, timeTaken = mae.compute_mae(recommender)
-                print(f'{recommender.name} Threshold, abs={abs}, t={t}, mae={error}, time={int(timeTaken)}')
-            for k in [2,10,100]:
+                savedMAE.append(error)
+                savedT.append(timeTaken)
+                print(f'{recommender.name} Threshold, abs={abs}, t={t}, mae={error}, time={int(timeTaken)} seconds')
+            plt.figure()
+            plt.plot(x, savedMAE, marker='o', linestyle='-', color='b', label='MAE')
+            plt.xlabel('Threshold')
+            plt.ylabel('MAE')
+            plt.ylim(0, max(savedMAE)+0.5)
+            plt.title(f'{recommender.name} with threshold={t}, absoluteValue={abs}')
+            plt.savefig(f'graphs/MAE_{recommender.name}_threshold={t}_absoluteValue={abs}.png')
+            plt.figure()
+            plt.plot(x, savedT, marker='o', linestyle='-', color='b', label='time')
+            plt.xlabel('Threshold')
+            plt.ylabel('time')
+            plt.ylim(0, max(savedT)+10)
+            plt.title(f'{recommender.name} with threshold={t}, absoluteValue={abs}')
+            plt.savefig(f'graphs/time_{recommender.name}_threshold={t}_absoluteValue={abs}.png')
+            x=[1,2,5,10,50,100]
+            savedMAE=[]
+            savedT=[]
+            for k in x:
                 recommender.abs = abs
                 recommender.k = k
                 recommender.useThreshold = False
                 error, timeTaken = mae.compute_mae(recommender)
-                print(f'{recommender.name} TopK, abs={abs}, k={k}, mae={error}, time={timeTaken}')
+                savedMAE.append(error)
+                savedT.append(timeTaken)
+                print(f'{recommender.name} TopK, abs={abs}, k={k}, mae={error}, time={int(timeTaken)} seconds')
+            plt.figure()
+            plt.plot(x, savedMAE, marker='o', linestyle='-', color='b', label='MAE')
+            plt.xlabel('TopK')
+            plt.ylabel('MAE')
+            plt.ylim(0, max(savedMAE)+0.5)
+            plt.title(f'{recommender.name} with topK={k}, absoluteValue={abs}')
+            plt.savefig(f'graphs/MAE_{recommender.name}_TopK={k}_absoluteValue={abs}.png')
+            plt.figure()
+            plt.plot(x, savedT, marker='o', linestyle='-', color='b', label='time')
+            plt.xlabel('TopK')
+            plt.ylabel('time')
+            plt.ylim(0, max(savedT)+10)
+            plt.title(f'{recommender.name} with TopK={k}, absoluteValue={abs}')
+            plt.savefig(f'graphs/time_{recommender.name}_TopK={k}_absoluteValue={abs}.png')
