@@ -15,7 +15,7 @@ class UserBasedRecommender:
         self.abs = False
 
     @classmethod
-    def read(cls, file_path: str, na=0, name="UserBasedRecommender"):
+    def read(cls, file_path: str, na=0, name="UserBasedRecommender"): #used to initialize the recommender
         with open(file_path, "r") as file:
             file.readline()
             users = file.readline().split()
@@ -28,12 +28,12 @@ class UserBasedRecommender:
 
     @cached_property
     def similarities(self):
-        similarities = pd.DataFrame(np.nan, index=self.data.index, columns=self.data.index, dtype=float)
+        similarities = pd.DataFrame(np.nan, index=self.data.index, columns=self.data.index, dtype=float)  #will be saved in the recommender object
 
         for user in self.data.index:
             for peer in self.data.index:
                 if pd.isna(similarities.at[user, peer]):
-                    similarities.at[user, peer] = similarities.at[peer, user] = self.compare(user, peer)
+                    similarities.at[user, peer] = similarities.at[peer, user] = self.compare(user, peer)  #similarities are symmetric
 
         return similarities
 
@@ -50,25 +50,25 @@ class UserBasedRecommender:
     def compare(self, user: str, peer: str):
         user_ratings = self.data.loc[user]
         user_rated = user_ratings != self.na
-        user_rated_ratings = user_ratings[user_rated]
+        user_rated_ratings = user_ratings[user_rated] #all ratings the user actually made
 
         if user_rated_ratings.empty:
             return 0.0
 
         peer_ratings = self.data.loc[peer]
         peer_rated = peer_ratings != self.na
-        peer_rated_ratings = peer_ratings[peer_rated]
+        peer_rated_ratings = peer_ratings[peer_rated] #all ratings the peer actually made
 
         if peer_rated_ratings.empty:
             return 0.0
 
-        both_rated = user_rated & peer_rated
+        both_rated = user_rated & peer_rated #union of ratings to get similarity with
         centered_user_ratings = user_rated_ratings[both_rated] - user_rated_ratings.mean()
         centered_peer_ratings = peer_rated_ratings[both_rated] - peer_rated_ratings.mean()
         entered_ratings_covariance = np.dot(centered_user_ratings, centered_peer_ratings)
         centered_ratings_norm = np.sqrt(np.sum(centered_user_ratings**2)) * np.sqrt(np.sum(centered_peer_ratings**2))
 
-        if np.isclose(centered_ratings_norm, 0):
+        if np.isclose(centered_ratings_norm, 0):  #avoid /0 error
             return 0.0
 
         return entered_ratings_covariance / centered_ratings_norm
@@ -81,30 +81,31 @@ class UserBasedRecommender:
         user_rated_ratings = user_ratings[user_ratings != self.na]
         user_mean_rating = user_rated_ratings.mean()
         user_similarities = self.similarities.loc[user].drop(user)
+        pure_user_similarities = user_similarities
 
-        valid_similar_users = user_similarities.index.intersection(user_rated_ratings.index)
+        valid_similar_users = user_similarities.index.intersection(user_rated_ratings.index) #all similar users we can actually use to predict
         if self.abs:
-            user_similarities = user_similarities.abs()
+            user_similarities = user_similarities.abs() #get absolute similarities
 
         if self.useThreshold:
-            chosen = user_similarities.loc[valid_similar_users][user_similarities.loc[valid_similar_users] > self.t]
+            chosen = user_similarities.loc[valid_similar_users][user_similarities.loc[valid_similar_users] > self.t]  #all sufficiently similar valid users
             chosen_ratings = self.data.loc[chosen.index, item]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
         else:
-            chosen = user_similarities.loc[valid_similar_users].nlargest(self.k)
+            chosen = user_similarities.loc[valid_similar_users].nlargest(self.k) #topk valid users
             chosen_ratings = self.data.loc[chosen.index, item]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
 
-        if user_rated_ratings.empty:
+        if user_rated_ratings.empty: #eventuality handler
             return user_mean_rating
 
-        rated_similarities = user_similarities[rated_ratings.index]
+        rated_similarities = pure_user_similarities[rated_ratings.index]
         rated_similarities_sum = rated_similarities.sum()
         rated_mean_ratings = self.data.loc[rated_ratings.index].replace(self.na, np.nan).mean(axis=1)
         centered_ratings = rated_ratings - rated_mean_ratings.loc[rated_ratings.index]
         centered_ratings_weighted_sum = (rated_similarities * centered_ratings).sum()
 
-        if np.isclose(rated_similarities_sum, 0):
+        if np.isclose(rated_similarities_sum, 0): #handle /0 error
             return user_mean_rating
 
         return user_mean_rating + centered_ratings_weighted_sum / rated_similarities_sum

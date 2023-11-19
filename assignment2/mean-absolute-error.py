@@ -82,8 +82,8 @@ if __name__ == "__main__":
         end=time.time()
         print(f"{recommender.name} computed similarities in {end-start} seconds")
 
-    for recommender in [itemRecommender, userRecommender]:
-        for abs in [False, True]:
+    for recommender in [userRecommender, itemRecommender]:
+        for abs in [True, False]:
             x=[0,0.2,0.4,0.6,0.8]
             savedMAE=[]
             savedT=[]
