@@ -12,10 +12,7 @@ class mae:
     def compute_mae(rec):
         start_time = time.time()
         total_predictions = 0
-        total_under_predictions = 0
-        total_over_predictions = 0
-        no_valid_neighbors_count = 0
-        total_neighbors_used = 0
+        total_neighbours_used = 0
 
         mae_scores = []
 
@@ -28,7 +25,7 @@ class mae:
                     rec.data.at[user, item] = rec.na
 
                     # Predict the rating
-                    predicted_rating = rec.predict(user, item)
+                    predicted_rating, num_neighbours_used = rec.predict(user, item)
 
                     # Reset the original rating
                     rec.data.at[user, item] = true_rating
@@ -43,22 +40,10 @@ class mae:
 
                     # Count predictions and update statistics
                     total_predictions += 1
-                    total_neighbors_used += rec.k
-
-                    if true_rating < 1 and predicted_rating < 1:
-                        total_under_predictions += 1
-                    elif true_rating > 5 and predicted_rating > 5:
-                        total_over_predictions += 1
-
-                    # Check for cases with no valid neighbors
-                    if np.isnan(predicted_rating):
-                        no_valid_neighbors_count += 1
+                    total_neighbours_used += num_neighbours_used
 
         # Compute the mean of MAE scores
         final_mae = np.mean(mae_scores)
-
-        # Calculate average neighbors used
-        average_neighbors_used = total_neighbors_used / total_predictions if total_predictions > 0 else 0
 
         # Print the desired output
         #print("Total predictions:", total_predictions)
@@ -67,7 +52,7 @@ class mae:
         #print("MAE =", final_mae)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        return final_mae, elapsed_time
+        return final_mae, elapsed_time, total_neighbours_used / total_predictions
 
 
 if __name__ == "__main__":
@@ -82,7 +67,7 @@ if __name__ == "__main__":
         end=time.time()
         print(f"{recommender.name} computed similarities in {end-start} seconds")
 
-    for recommender in [userRecommender, itemRecommender]:
+    for recommender in [itemRecommender, userRecommender]:
         for abs in [True, False]:
             x=[0,0.2,0.4,0.6,0.8]
             savedMAE=[]
@@ -91,10 +76,11 @@ if __name__ == "__main__":
                 recommender.abs = abs
                 recommender.t = t
                 recommender.useThreshold = True
-                error, timeTaken = mae.compute_mae(recommender)
+                error, timeTaken, numNeighbours = mae.compute_mae(recommender)
                 savedMAE.append(error)
                 savedT.append(timeTaken)
-                print(f'{recommender.name} Threshold, abs={abs}, t={t}, mae={error}, time={int(timeTaken)} seconds')
+                print(f'{recommender.name} Threshold, abs={abs}, t={t}, mae={error}, time={int(timeTaken)} seconds, averageNeighbourCount={numNeighbours}')
+            '''
             plt.figure()
             plt.plot(x, savedMAE, marker='o', linestyle='-', color='b', label='MAE')
             plt.xlabel('Threshold')
@@ -109,7 +95,7 @@ if __name__ == "__main__":
             plt.ylim(0, max(savedT)+10)
             plt.title(f'{recommender.name} with threshold={t}, absoluteValue={abs}')
             plt.savefig(f'graphs/time_{recommender.name}_threshold={t}_absoluteValue={abs}.png')
-            
+            '''
             x=[1,2,5,10,50,100]
             savedMAE=[]
             savedT=[]
@@ -117,10 +103,11 @@ if __name__ == "__main__":
                 recommender.abs = abs
                 recommender.k = k
                 recommender.useThreshold = False
-                error, timeTaken = mae.compute_mae(recommender)
+                error, timeTaken, numNeighbours = mae.compute_mae(recommender)
                 savedMAE.append(error)
                 savedT.append(timeTaken)
-                print(f'{recommender.name} TopK, abs={abs}, k={k}, mae={error}, time={int(timeTaken)} seconds')
+                print(f'{recommender.name} TopK, abs={abs}, k={k}, mae={error}, time={int(timeTaken)} seconds, averageNeighbourCount={numNeighbours}')
+            '''
             plt.figure()
             plt.plot(x, savedMAE, marker='o', linestyle='-', color='b', label='MAE')
             plt.xlabel('TopK')
@@ -135,3 +122,4 @@ if __name__ == "__main__":
             plt.ylim(0, max(savedT)+10)
             plt.title(f'{recommender.name} with TopK={k}, absoluteValue={abs}')
             plt.savefig(f'graphs/time_{recommender.name}_TopK={k}_absoluteValue={abs}.png')
+            '''

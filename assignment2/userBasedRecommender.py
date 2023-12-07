@@ -75,7 +75,7 @@ class UserBasedRecommender:
 
     def predict(self, user: str, item: str):
         if (user_rating := self.data.loc[user, item]) != self.na:
-            return user_rating
+            return user_rating, 0
 
         user_ratings = self.data.loc[user]
         user_rated_ratings = user_ratings[user_ratings != self.na]
@@ -95,9 +95,10 @@ class UserBasedRecommender:
             chosen = user_similarities.loc[valid_similar_users].nlargest(self.k) #topk valid users
             chosen_ratings = self.data.loc[chosen.index, item]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
+        num_neighbours = rated_ratings.shape[0]
 
         if user_rated_ratings.empty: #eventuality handler
-            return user_mean_rating
+            return user_mean_rating, num_neighbours
 
         rated_similarities = pure_user_similarities[rated_ratings.index]
         rated_similarities_sum = rated_similarities.sum()
@@ -106,9 +107,9 @@ class UserBasedRecommender:
         centered_ratings_weighted_sum = (rated_similarities * centered_ratings).sum()
 
         if np.isclose(rated_similarities_sum, 0): #handle /0 error
-            return user_mean_rating
-
-        return user_mean_rating + centered_ratings_weighted_sum / rated_similarities_sum
+            return user_mean_rating, num_neighbours
+            
+        return user_mean_rating + centered_ratings_weighted_sum / rated_similarities_sum, num_neighbours
 
 
 if __name__ == "__main__":

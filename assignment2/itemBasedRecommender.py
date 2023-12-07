@@ -80,7 +80,7 @@ class ItemBasedRecommender:
 
     def predict(self, user: str, item: str):
         if (user_rating := self.data.loc[user, item]) != self.na:  #if already predicted, return prediction
-            return user_rating
+            return user_rating, 0
 
         user_ratings = self.data.loc[user]
         user_rated_ratings = user_ratings[user_ratings != self.na]  #all items the user actually rated
@@ -105,18 +105,19 @@ class ItemBasedRecommender:
             chosen = item_similarities.loc[valid_similar_items].nlargest(self.k)  #topk similar valid items
             chosen_ratings = self.data.loc[user, chosen.index]
             rated_ratings = chosen_ratings[chosen_ratings != self.na]
+        num_neighbours = rated_ratings.shape[0]
 
         if rated_ratings.empty:
-            return item_mean_rating  #issue handler
+            return item_mean_rating, num_neighbours  #issue handler
 
         rated_similarities = pure_item_similarities[rated_ratings.index]
         rated_similarities_sum = rated_similarities.sum()
         centered_ratings_weighted_sum = (rated_similarities * rated_ratings).sum()
 
         if np.isclose(rated_similarities_sum, 0):  #handles /0 error
-            return item_mean_rating
+            return item_mean_rating, num_neighbours
 
-        return centered_ratings_weighted_sum / rated_similarities_sum
+        return centered_ratings_weighted_sum / rated_similarities_sum, num_neighbours
 
 
 if __name__ == "__main__":
